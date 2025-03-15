@@ -7,6 +7,7 @@ import { promisify } from "util";
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
 import { logger } from "./logger";
+import { UserLogger } from "./userLogger";
 
 declare global {
   namespace Express {
@@ -17,22 +18,32 @@ declare global {
 const scryptAsync = promisify(scrypt);
 
 async function hashPassword(password: string) {
-  const salt = randomBytes(16).toString("hex");
-  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
-  return `${buf.toString("hex")}.${salt}`;
+  try {
+    const salt = randomBytes(16).toString("hex");
+    const buf = (await scryptAsync(password, salt, 64)) as Buffer;
+    return `${buf.toString("hex")}.${salt}`;
+  } catch (error) {
+    logger.error(`Password hashing failed`, {}, error as Error);
+    throw new Error(`Failed to hash password: ${(error as Error).message}`);
+  }
 }
 
 async function comparePasswords(supplied: string, stored: string) {
-  // For development, if the stored password doesn't contain a salt, assume plain text comparison
-  if (!stored.includes('.')) {
-    return supplied === stored;
+  try {
+    // For development, if the stored password doesn't contain a salt, assume plain text comparison
+    if (!stored.includes('.')) {
+      return supplied === stored;
+    }
+    
+    // Otherwise, do the secure comparison with salt
+    const [hashed, salt] = stored.split(".");
+    const hashedBuf = Buffer.from(hashed, "hex");
+    const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
+    return timingSafeEqual(hashedBuf, suppliedBuf);
+  } catch (error) {
+    logger.error(`Password comparison failed`, {}, error as Error);
+    return false;
   }
-  
-  // Otherwise, do the secure comparison with salt
-  const [hashed, salt] = stored.split(".");
-  const hashedBuf = Buffer.from(hashed, "hex");
-  const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
-  return timingSafeEqual(hashedBuf, suppliedBuf);
 }
 
 export function setupAuth(app: Express) {
@@ -128,93 +139,158 @@ export function setupAuth(app: Express) {
 
   app.post("/api/register", async (req: Request, res: Response, next: NextFunction) => {
     try {
-      logger.info(`User registration attempt`, {
-        username: req.body.username,
-        requestId: req.id,
-        role: req.body.role,
-        resellerGroup: req.body.resellerGroup
-      });
+      // Enhanced detailed registration logging
+      UserLogger.logRegistrationAttempt(req, req.body);
       
-      // Validate required fields
+      // Validate required fields with more detailed logging
       if (!req.body.username || !req.body.password) {
-        logger.warn(`Registration failed: Missing required fields`, {
-          requestId: req.id,
-          username: req.body.username,
-          providedFields: Object.keys(req.body).filter(k => k !== 'password')
+        const reason = !req.body.username ? 'missing_username' : 'missing_password';
+        UserLogger.logRegistrationValidationFailure(req, req.body, reason);
+        return res.status(400).json({ 
+          message: "Username and password are required",
+          error: reason,
+          requestId: req.id
         });
-        return res.status(400).json({ message: "Username and password are required" });
       }
+      
+      // Log all received fields for debugging purposes
+      logger.debug(`Registration request data`, {
+        requestId: req.id,
+        receivedFields: Object.keys(req.body).filter(k => k !== 'password'),
+        hasUsername: !!req.body.username,
+        hasPassword: !!req.body.password,
+        hasRole: !!req.body.role,
+        role: req.body.role,
+        resellerGroup: req.body.resellerGroup,
+        creditBalance: req.body.creditBalance
+      });
       
       // Check if username already exists
       const existingUser = await storage.getUserByUsername(req.body.username);
       if (existingUser) {
-        logger.warn(`Registration failed: Username already exists`, {
-          requestId: req.id,
-          username: req.body.username
+        UserLogger.logRegistrationValidationFailure(req, req.body, 'username_exists');
+        return res.status(400).json({ 
+          message: "Username already exists",
+          error: 'username_exists',
+          requestId: req.id
         });
-        return res.status(400).json({ message: "Username already exists" });
       }
 
       // Set default values for required fields if not provided
-      const normalizedUserData = {
-        ...req.body,
-        role: req.body.role || 'reseller',
-        creditBalance: req.body.creditBalance || '0',
-        resellerGroup: req.body.resellerGroup || 1
-      };
-      
-      logger.debug(`Hashing password for new user`, {
-        requestId: req.id,
-        username: req.body.username
-      });
-      
-      const hashedPassword = await hashPassword(req.body.password);
-      const userData = { ...normalizedUserData, password: hashedPassword };
-      
-      logger.debug(`Creating user in storage`, {
-        requestId: req.id,
-        username: req.body.username,
-        role: userData.role
-      });
-      
-      // Attempt to create user
-      const user = await storage.createUser(userData);
-      
-      logger.info(`User created successfully`, {
-        requestId: req.id,
-        username: user.username,
-        userId: user.id,
-        role: user.role
-      });
-      
-      // Remove password from response
-      const { password, ...userWithoutPassword } = user;
-
-      // Log user in after successful registration
-      req.login(user, (err) => {
-        if (err) {
-          logger.error(`Error during auto-login after registration`, {
+      try {
+        const normalizedUserData = {
+          ...req.body,
+          role: req.body.role || 'reseller',
+          creditBalance: req.body.creditBalance || '0',
+          resellerGroup: parseInt(req.body.resellerGroup) || 1
+        };
+        
+        // Log the normalized data for debugging
+        UserLogger.logUserDataTransformation(req, 'normalized_data', normalizedUserData);
+        
+        // Hash password with proper error handling
+        let hashedPassword;
+        try {
+          hashedPassword = await hashPassword(req.body.password);
+        } catch (hashError) {
+          logger.error(`Password hashing failed during registration`, {
             requestId: req.id,
-            username: user.username,
-            userId: user.id
-          }, err as Error);
-          return next(err);
+            username: req.body.username,
+          }, hashError as Error);
+          return res.status(500).json({ 
+            message: "Error creating user: password hashing failed",
+            error: 'password_hash_failed',
+            requestId: req.id
+          });
         }
         
-        logger.info(`User auto-logged in after registration`, {
-          requestId: req.id,
-          username: user.username,
-          userId: user.id
+        const userData = { ...normalizedUserData, password: hashedPassword };
+        
+        // Record what we're about to do with the storage
+        UserLogger.logStorageOperation(req, 'create_user', {
+          ...userData,
+          password: '[REDACTED]' // Don't log the actual password hash
         });
         
-        res.status(201).json(userWithoutPassword);
-      });
+        // Attempt to create user with proper error handling
+        let user;
+        try {
+          user = await storage.createUser(userData);
+        } catch (storageError) {
+          UserLogger.logUserCreationError(req, userData, storageError);
+          return res.status(500).json({ 
+            message: "Error creating user in storage",
+            error: 'storage_error',
+            details: (storageError as Error).message,
+            requestId: req.id
+          });
+        }
+        
+        if (!user) {
+          logger.error(`User creation failed: storage returned null or undefined`, {
+            requestId: req.id,
+            username: userData.username,
+          });
+          return res.status(500).json({ 
+            message: "Error creating user: storage operation failed",
+            error: 'storage_returned_null',
+            requestId: req.id
+          });
+        }
+        
+        // Log successful user creation
+        UserLogger.logUserCreationSuccess(req, user);
+        
+        // Remove password from response
+        const { password, ...userWithoutPassword } = user;
+
+        // Log user in after successful registration
+        req.login(user, (err) => {
+          if (err) {
+            logger.error(`Error during auto-login after registration`, {
+              requestId: req.id,
+              username: user.username,
+              userId: user.id
+            }, err as Error);
+            
+            // Even if login fails, we should still return the created user
+            return res.status(201).json({
+              ...userWithoutPassword,
+              warning: "User was created but auto-login failed"
+            });
+          }
+          
+          UserLogger.logAuthSuccess(req, user);
+          
+          res.status(201).json(userWithoutPassword);
+        });
+      } catch (processingError) {
+        // This catches any errors during the data normalization and preparation
+        logger.error(`Error during user data processing`, {
+          requestId: req.id,
+          username: req.body?.username,
+          error: (processingError as Error).message,
+          stack: (processingError as Error).stack
+        });
+        
+        return res.status(500).json({ 
+          message: "Error processing user data",
+          error: 'data_processing_error',
+          details: (processingError as Error).message,
+          requestId: req.id
+        });
+      }
     } catch (error) {
-      logger.error(`Error during user registration`, {
-        requestId: req.id,
-        username: req.body?.username
-      }, error as Error);
-      next(error);
+      // This is the outermost catch for any unhandled errors
+      UserLogger.logUserCreationError(req, req.body, error);
+      
+      // Provide a detailed error response instead of just passing to next
+      return res.status(500).json({
+        message: "An unexpected error occurred during registration",
+        error: 'unexpected_error',
+        details: (error as Error).message,
+        requestId: req.id
+      });
     }
   });
 
