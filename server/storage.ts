@@ -105,11 +105,19 @@ export class MemStorage implements IStorage {
       checkPeriod: 86400000 // prune expired entries every 24h
     });
 
-    // Create initial admin user
+    // Create initial admin users with plain text passwords for development
     this.createUser({
       username: "admin",
       password: "admin123",
       role: "admin"
+    });
+    
+    // Create CEO admin user
+    this.createUser({
+      username: "ceo@openweb.co.za",
+      password: "Maniac20!",
+      role: "admin",
+      creditBalance: "10000"
     });
 
     // Create default product categories
