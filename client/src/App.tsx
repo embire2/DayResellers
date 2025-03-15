@@ -15,6 +15,7 @@ import DashboardDesigner from "@/pages/admin/dashboard-designer";
 import ApiIntegration from "@/pages/admin/api-integration";
 import ApiTest from "@/pages/admin/api-test";
 import AdminSettings from "@/pages/admin/settings";
+import Diagnostics from "@/pages/admin/diagnostics";
 
 // Reseller Pages
 import ResellerDashboard from "@/pages/reseller/dashboard";
@@ -39,6 +40,7 @@ function Router() {
       <ProtectedRoute path="/admin/api-integration" component={ApiIntegration} requiredRole="admin" />
       <ProtectedRoute path="/admin/api-test" component={ApiTest} requiredRole="admin" />
       <ProtectedRoute path="/admin/settings" component={AdminSettings} requiredRole="admin" />
+      <ProtectedRoute path="/admin/diagnostics" component={Diagnostics} requiredRole="admin" />
 
       {/* Protected Reseller Routes */}
       <ProtectedRoute path="/reseller" component={ResellerDashboard} requiredRole="reseller" />

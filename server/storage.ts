@@ -204,11 +204,52 @@ export class MemStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.userIdCounter++;
-    const now = new Date();
-    const user: User = { ...insertUser, id, createdAt: now, dashboardConfig: null };
-    this.users.set(id, user);
-    return user;
+    try {
+      if (!insertUser) {
+        throw new Error('Cannot create user: Invalid or empty user data provided');
+      }
+      
+      if (!insertUser.username) {
+        throw new Error('Cannot create user: Username is required');
+      }
+      
+      if (!insertUser.password) {
+        throw new Error('Cannot create user: Password is required');
+      }
+      
+      // Ensure proper type conversion for required fields
+      const normalizedData = {
+        ...insertUser,
+        role: insertUser.role || 'reseller',
+        creditBalance: insertUser.creditBalance || '0',
+        resellerGroup: typeof insertUser.resellerGroup === 'string' 
+          ? parseInt(insertUser.resellerGroup, 10) 
+          : (insertUser.resellerGroup || 1)
+      };
+      
+      const id = this.userIdCounter++;
+      const now = new Date();
+      
+      // Create user with properly typed fields
+      const user: User = {
+        id,
+        username: normalizedData.username,
+        password: normalizedData.password,
+        role: normalizedData.role,
+        creditBalance: normalizedData.creditBalance,
+        resellerGroup: normalizedData.resellerGroup,
+        dashboardConfig: null,
+        createdAt: now
+      };
+      
+      // Store in memory
+      this.users.set(id, user);
+      
+      return user;
+    } catch (error) {
+      console.error(`Error in storage.createUser:`, error);
+      throw new Error(`User creation failed in storage: ${(error as Error).message}`);
+    }
   }
 
   async updateUser(id: number, userData: Partial<User>): Promise<User | undefined> {

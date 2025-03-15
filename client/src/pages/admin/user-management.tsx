@@ -98,22 +98,52 @@ export default function UserManagement() {
   const createUserMutation = useMutation({
     mutationFn: async (data: z.infer<typeof createUserSchema>) => {
       const { confirmPassword, ...userData } = data;
-      const res = await apiRequest("POST", "/api/users", userData);
-      return res.json();
+      
+      console.log("Attempting to create user with data:", {
+        ...userData,
+        password: "[REDACTED]" // Don't log the actual password
+      });
+      
+      try {
+        const res = await apiRequest("POST", "/api/users", userData);
+        
+        if (!res.ok) {
+          // Attempt to parse the error response
+          const errorData = await res.json().catch(() => null);
+          console.error("User creation API error:", errorData);
+          
+          // Throw a detailed error
+          throw new Error(
+            errorData?.message || errorData?.error || `Error: ${res.status} ${res.statusText}`
+          );
+        }
+        
+        return await res.json();
+      } catch (error) {
+        console.error("User creation failed:", error);
+        throw error;
+      }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("User created successfully:", data.username);
       queryClient.invalidateQueries({ queryKey: ['/api/users'] });
       setIsAddModalOpen(false);
       form.reset();
       toast({
         title: "User created",
-        description: "New user has been successfully created",
+        description: `New user "${data.username}" has been successfully created`,
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      console.error("User creation error in component:", error);
+      
+      // Extract the error details from various possible formats
+      const errorMessage = error.message || "Unknown error occurred";
+      const errorDetails = error.details || error.error || "";
+      
       toast({
         title: "Error creating user",
-        description: error.message,
+        description: errorDetails ? `${errorMessage}: ${errorDetails}` : errorMessage,
         variant: "destructive",
       });
     },

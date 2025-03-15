@@ -1,9 +1,11 @@
-import type { Express } from "express";
+import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { setupApiIntegration } from "./api-integration";
 import { calculateProRataPrice, getPriceByResellerGroup } from "../client/src/lib/utils";
+import { setupDiagnosticRoutes, recordDiagnosticError } from "./diagnostic-routes";
+import { logger } from "./logger";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
@@ -11,6 +13,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Setup API integration routes
   setupApiIntegration(app);
+  
+  // Setup diagnostic routes
+  setupDiagnosticRoutes(app);
 
   // User Management Routes
   app.get("/api/users", async (req, res) => {
@@ -28,11 +33,120 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(safeUsers);
     } catch (error) {
+      logger.error(`Failed to fetch users`, { 
+        requestId: req.id,
+        userId: req.user?.id 
+      }, error as Error);
+      
       res.status(500).json({ message: "Failed to fetch users" });
     }
   });
   
-  // No external API for user creation - users are managed locally on the server
+  // User creation endpoint (admin only)
+  app.post("/api/users", async (req, res) => {
+    try {
+      if (!req.isAuthenticated() || req.user?.role !== "admin") {
+        logger.warn(`Unauthorized user creation attempt`, { 
+          requestId: req.id,
+          userId: req.user?.id,
+          role: req.user?.role
+        });
+        return res.status(403).json({ message: "Not authorized" });
+      }
+      
+      logger.info(`Admin attempting to create user`, { 
+        requestId: req.id,
+        userId: req.user.id,
+        newUsername: req.body.username,
+        newRole: req.body.role
+      });
+      
+      // Basic validation
+      if (!req.body.username || !req.body.password) {
+        logger.warn(`User creation failed: Missing required fields`, {
+          requestId: req.id,
+          userId: req.user.id,
+          providedFields: Object.keys(req.body).filter(k => k !== 'password')
+        });
+        return res.status(400).json({ message: "Username and password are required" });
+      }
+      
+      // Check if username already exists
+      const existingUser = await storage.getUserByUsername(req.body.username);
+      if (existingUser) {
+        logger.warn(`User creation failed: Username already exists`, {
+          requestId: req.id,
+          userId: req.user.id,
+          username: req.body.username
+        });
+        return res.status(400).json({ message: "Username already exists" });
+      }
+      
+      try {
+        // Create the user with detailed logging
+        const userData = {
+          ...req.body,
+          role: req.body.role || 'reseller',
+          creditBalance: req.body.creditBalance || '0',
+          resellerGroup: typeof req.body.resellerGroup === 'string' 
+            ? parseInt(req.body.resellerGroup, 10) 
+            : (req.body.resellerGroup || 1)
+        };
+        
+        logger.debug(`Creating user with normalized data`, {
+          requestId: req.id,
+          userId: req.user.id,
+          userData: {
+            ...userData,
+            password: '[REDACTED]'
+          }
+        });
+        
+        const user = await storage.createUser(userData);
+        
+        logger.info(`User created successfully by admin`, {
+          requestId: req.id,
+          adminId: req.user.id,
+          newUserId: user.id,
+          newUsername: user.username,
+          newRole: user.role
+        });
+        
+        // Remove password from response
+        const { password, ...userWithoutPassword } = user;
+        res.status(201).json(userWithoutPassword);
+      } catch (createError) {
+        logger.error(`Error during user creation by admin`, {
+          requestId: req.id,
+          userId: req.user.id,
+          error: (createError as Error).message
+        }, createError as Error);
+        
+        // Record for diagnostics
+        recordDiagnosticError(req, createError, req.body);
+        
+        return res.status(500).json({ 
+          message: "Failed to create user", 
+          error: (createError as Error).message,
+          requestId: req.id
+        });
+      }
+    } catch (error) {
+      logger.error(`Unexpected error in user creation endpoint`, {
+        requestId: req.id,
+        userId: req.user?.id
+      }, error as Error);
+      
+      // Record for diagnostics
+      recordDiagnosticError(req, error, req.body);
+      
+      res.status(500).json({ 
+        message: "An unexpected error occurred", 
+        error: (error as Error).message,
+        requestId: req.id
+      });
+    }
+  });
 
   // Update user credit balance
   app.post("/api/users/:id/credit", async (req, res) => {
