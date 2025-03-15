@@ -283,4 +283,46 @@ export const setupApiIntegration = (app: Express) => {
       res.status(500).json({ success: false, error: errorMessage });
     }
   });
+
+  // Execute API test with specified parameters
+  app.post('/api/broadband/execute-test', async (req, res) => {
+    try {
+      if (!req.isAuthenticated() || req.user?.role !== 'admin') {
+        return res.status(403).json({ success: false, error: 'Not authorized' });
+      }
+      
+      const { masterCategory, endpoint, method, body } = req.body;
+      
+      if (!masterCategory || !endpoint) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Master category and endpoint are required' 
+        });
+      }
+      
+      if (masterCategory !== 'MTN Fixed' && masterCategory !== 'MTN GSM') {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Invalid master category. Must be "MTN Fixed" or "MTN GSM"' 
+        });
+      }
+      
+      if (method !== 'GET' && method !== 'POST') {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Only GET and POST methods are supported' 
+        });
+      }
+      
+      // Execute the API request
+      const result = await makeApiRequest(masterCategory, endpoint, method, body);
+      res.json(result);
+    } catch (error) {
+      let errorMessage = 'Failed to execute API test';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      res.status(500).json({ success: false, error: errorMessage });
+    }
+  });
 };

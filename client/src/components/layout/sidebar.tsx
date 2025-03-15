@@ -102,6 +102,19 @@ export function Sidebar() {
                     </svg>
                     API Integration
                   </Link>
+                  <Link 
+                    href="/admin/api-test"
+                    className={cn(
+                      "group flex items-center px-2 py-2 text-sm font-medium rounded-md text-neutral-darker hover:bg-neutral-lighter",
+                      isActive("/admin/api-test") && "sidebar-item active"
+                    )}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3 text-neutral-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="m8 12 2 2 4-4" />
+                    </svg>
+                    API Test Console
+                  </Link>
                 </div>
               )}
 

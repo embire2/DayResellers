@@ -13,6 +13,7 @@ import UserManagement from "@/pages/admin/user-management";
 import ProductsPricing from "@/pages/admin/products-pricing";
 import DashboardDesigner from "@/pages/admin/dashboard-designer";
 import ApiIntegration from "@/pages/admin/api-integration";
+import ApiTest from "@/pages/admin/api-test";
 
 // Reseller Pages
 import ResellerDashboard from "@/pages/reseller/dashboard";
