@@ -72,9 +72,12 @@ export default function ApiIntegration() {
   } | null>(null);
 
   // Fetch API settings
-  const { data: apiSettings, isLoading: isLoadingApiSettings } = useQuery<ApiSetting[]>({
+  const { data: apiSettingsResponse, isLoading: isLoadingApiSettings } = useQuery<{ success: boolean, data: ApiSetting[] }>({
     queryKey: ['/api/broadband/endpoints', activeTab],
   });
+  
+  // Extract the array of settings from the response
+  const apiSettings = apiSettingsResponse?.data || [];
 
   // API setting form
   const form = useForm<z.infer<typeof apiSettingSchema>>({
