@@ -109,7 +109,8 @@ export class MemStorage implements IStorage {
     this.createUser({
       username: "admin",
       password: "admin123",
-      role: "admin"
+      role: "admin",
+      creditBalance: "5000"
     });
     
     // Create CEO admin user
@@ -118,6 +119,23 @@ export class MemStorage implements IStorage {
       password: "Maniac20!",
       role: "admin",
       creditBalance: "10000"
+    });
+    
+    // Create additional admin user
+    this.createUser({
+      username: "finance@openweb.co.za",
+      password: "Finance2025!",
+      role: "admin",
+      creditBalance: "15000"
+    });
+    
+    // Create reseller user example
+    this.createUser({
+      username: "reseller@example.com",
+      password: "Reseller123!",
+      role: "reseller",
+      resellerGroup: 1,
+      creditBalance: "2500"
     });
 
     // Create default product categories
