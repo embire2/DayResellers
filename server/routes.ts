@@ -1,6 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { pgStorage as storage } from "./pg-storage";
 import { setupAuth } from "./auth";
 import { setupApiIntegration } from "./api-integration";
 import { calculateProRataPrice, getPriceByResellerGroup } from "../client/src/lib/utils";

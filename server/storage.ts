@@ -8,7 +8,7 @@ import {
   transactions, type Transaction, type InsertTransaction
 } from "@shared/schema";
 import { DashboardConfig } from "@shared/types";
-import session from "express-session";
+import session, { Store } from "express-session";
 import createMemoryStore from "memorystore";
 
 const MemoryStore = createMemoryStore(session);
@@ -63,7 +63,7 @@ export interface IStorage {
   getRecentTransactions(limit: number): Promise<Transaction[]>;
   
   // Session store for authentication
-  sessionStore: session.SessionStore;
+  sessionStore: session.Store;
 }
 
 export class MemStorage implements IStorage {
@@ -76,7 +76,7 @@ export class MemStorage implements IStorage {
   private transactions: Map<number, Transaction>;
 
   // Session store
-  sessionStore: session.SessionStore;
+  sessionStore: session.Store;
 
   private userIdCounter: number;
   private productCategoryIdCounter: number;

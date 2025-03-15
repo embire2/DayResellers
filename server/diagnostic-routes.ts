@@ -4,7 +4,7 @@
  */
 
 import { Express, Request, Response } from "express";
-import { storage } from "./storage";
+import { pgStorage as storage } from "./pg-storage";
 import { logger } from "./logger";
 
 // Error tracking storage for diagnostic purposes

@@ -4,7 +4,7 @@ import { Express, Request, Response, NextFunction } from "express";
 import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
-import { storage } from "./storage";
+import { pgStorage as storage } from "./pg-storage";
 import { User as SelectUser } from "@shared/schema";
 import { logger } from "./logger";
 import { UserLogger } from "./userLogger";

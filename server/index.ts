@@ -3,6 +3,7 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { v4 as uuidv4 } from 'uuid';
 import { logger } from './logger';
+import { checkConnection, runMigrations } from './db';
 
 // Extend Request interface with id property
 declare global {
@@ -85,6 +86,24 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  try {
+    // Check database connection
+    logger.info("Checking database connection...");
+    const dbConnected = await checkConnection();
+    if (!dbConnected) {
+      throw new Error("Failed to connect to the database");
+    }
+    logger.info("Database connection successful");
+    
+    // Run database migrations
+    logger.info("Running database migrations...");
+    await runMigrations();
+    logger.info("Database migrations completed successfully");
+  } catch (error) {
+    logger.fatal("Database initialization failed", {}, error as Error);
+    process.exit(1);
+  }
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
