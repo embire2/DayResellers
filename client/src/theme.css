@@ -1,0 +1,49 @@
+:root {
+  --primary: 210 100% 42%;
+  --primary-foreground: 0 0% 100%;
+  
+  --primary-dark: 208 73% 41%;
+  --primary-light: 209 65% 51%;
+  
+  --neutral-lighter: 40 33% 95%;
+  --neutral-light: 40 6% 94%;
+  --neutral: 30 4% 82%;
+  --neutral-dark: 24 2% 37%;
+  --neutral-darker: 24 5% 19%;
+  
+  --success: 120 86% 28%;
+  --warning: 19 98% 42%;
+  --error: 0 100% 33%;
+  
+  --background: 40 33% 95%;
+  --foreground: 24 5% 19%;
+  
+  --card: 0 0% 100%;
+  --card-foreground: 24 5% 19%;
+  
+  --popover: 0 0% 100%;
+  --popover-foreground: 24 5% 19%;
+  
+  --secondary: 209 65% 51%;
+  --secondary-foreground: 0 0% 100%;
+  
+  --muted: 40 6% 94%;
+  --muted-foreground: 24 2% 37%;
+  
+  --accent: 40 6% 94%;
+  --accent-foreground: 24 5% 19%;
+  
+  --destructive: 0 100% 33%;
+  --destructive-foreground: 0 0% 100%;
+  
+  --border: 30 4% 82%;
+  --input: 30 4% 82%;
+  --ring: 209 65% 51%;
+  
+  --radius: 0.5rem;
+}
+
+.sidebar-item.active {
+  background-color: rgba(0, 120, 212, 0.1);
+  border-left: 3px solid hsl(var(--primary));
+}
