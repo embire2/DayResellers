@@ -1,15 +1,46 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { v4 as uuidv4 } from 'uuid';
+import { logger } from './logger';
+
+// Extend Request interface with id property
+declare global {
+  namespace Express {
+    interface Request {
+      id: string;
+    }
+  }
+}
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Add request ID to each request for traceability
+app.use((req: Request, _res: Response, next: NextFunction) => {
+  req.id = uuidv4();
+  next();
+});
+
+// Capture request and response data for detailed logging
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
   let capturedJsonResponse: Record<string, any> | undefined = undefined;
+
+  // Log incoming request details
+  if (path.startsWith("/api")) {
+    logger.info(`Request: ${req.method} ${path}`, {
+      method: req.method,
+      path: req.path,
+      requestId: req.id,
+      query: req.query,
+      body: req.method !== 'GET' ? req.body : undefined,
+      ip: req.ip,
+      userAgent: req.headers['user-agent']
+    });
+  }
 
   const originalResJson = res.json;
   res.json = function (bodyJson, ...args) {
@@ -20,6 +51,7 @@ app.use((req, res, next) => {
   res.on("finish", () => {
     const duration = Date.now() - start;
     if (path.startsWith("/api")) {
+      // Standard log for console display
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
@@ -28,8 +60,24 @@ app.use((req, res, next) => {
       if (logLine.length > 80) {
         logLine = logLine.slice(0, 79) + "…";
       }
-
       log(logLine);
+      
+      // Enhanced structured logging
+      const logContext = {
+        method: req.method,
+        path: req.path,
+        statusCode: res.statusCode,
+        duration,
+        requestId: req.id,
+        userId: req.user?.id,
+        responseData: capturedJsonResponse
+      };
+      
+      if (res.statusCode >= 400) {
+        logger.warn(`Response error: ${res.statusCode} ${req.method} ${path}`, logContext);
+      } else {
+        logger.debug(`Response success: ${res.statusCode} ${req.method} ${path}`, logContext);
+      }
     }
   });
 
@@ -39,12 +87,34 @@ app.use((req, res, next) => {
 (async () => {
   const server = await registerRoutes(app);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
-
-    res.status(status).json({ message });
-    throw err;
+    
+    // Enhanced error logging with context
+    const errorContext = {
+      method: req.method,
+      path: req.path,
+      requestId: req.id,
+      body: req.method !== 'GET' ? req.body : undefined,
+      query: req.query,
+      userId: req.user?.id,
+      ip: req.ip
+    };
+    
+    logger.error(`Error in request: ${status} ${message}`, errorContext, err);
+    
+    // In development, provide more details about the error
+    const errorResponse = { 
+      message,
+      requestId: req.id,
+      ...(process.env.NODE_ENV !== 'production' && {
+        stack: err.stack,
+        details: err.details || err.errors || null
+      })
+    };
+    
+    res.status(status).json(errorResponse);
   });
 
   // importantly only setup vite in development and after
@@ -65,6 +135,10 @@ app.use((req, res, next) => {
     host: "0.0.0.0",
     reusePort: true,
   }, () => {
+    logger.info(`OpenWeb Reseller Platform started and serving on port ${port}`, {
+      port,
+      env: process.env.NODE_ENV || 'development'
+    });
     log(`serving on port ${port}`);
   });
 })();
