@@ -40,8 +40,8 @@ export function StatCard({
       {linkText && linkUrl && (
         <CardFooter className="bg-neutral-lighter px-5 py-3">
           <div className="text-sm">
-            <Link href={linkUrl}>
-              <a className="font-medium text-primary hover:text-primary-dark">{linkText}</a>
+            <Link href={linkUrl} className="font-medium text-primary hover:text-primary-dark">
+              {linkText}
             </Link>
           </div>
         </CardFooter>

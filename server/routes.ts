@@ -31,6 +31,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch users" });
     }
   });
+  
+  // Create new user (admin only)
+  app.post("/api/users", async (req, res) => {
+    try {
+      if (!req.isAuthenticated() || req.user?.role !== "admin") {
+        return res.status(403).json({ message: "Not authorized" });
+      }
+      
+      // Check if username already exists
+      const existingUser = await storage.getUserByUsername(req.body.username);
+      if (existingUser) {
+        return res.status(400).json({ message: "Username already exists" });
+      }
+      
+      // Make sure required fields are provided
+      if (!req.body.username || !req.body.password) {
+        return res.status(400).json({ message: "Username and password are required" });
+      }
+      
+      // Set defaults for optional fields
+      const userData = {
+        ...req.body,
+        creditBalance: req.body.creditBalance || "0",
+        role: req.body.role || "reseller",
+        resellerGroup: req.body.resellerGroup || 1
+      };
+      
+      const user = await storage.createUser(userData);
+      
+      // Remove password from response
+      const { password, ...userWithoutPassword } = user;
+      
+      res.status(201).json(userWithoutPassword);
+    } catch (error) {
+      console.error("Error creating user:", error);
+      res.status(500).json({ message: "Failed to create user" });
+    }
+  });
 
   // Update user credit balance
   app.post("/api/users/:id/credit", async (req, res) => {

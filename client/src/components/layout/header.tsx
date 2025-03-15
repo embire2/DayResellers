@@ -67,25 +67,38 @@ export function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
           </div>
         </div>
         <div className="ml-4 flex items-center md:ml-6">
-          {/* Credit Balance for Resellers */}
-          {user?.role === 'reseller' && (
-            <div className="mr-3 bg-neutral-lighter rounded-md px-3 py-1 flex items-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 text-warning mr-1"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="12" cy="12" r="9" />
-                <path d="M14.31 8l5.74 9.94M9.69 8h11.48M7.38 12l5.74-9.94M9.69 16L3.95 6.06M14.31 16H2.83M16.62 12l-5.74 9.94" />
-              </svg>
-              <span className="text-sm font-medium">
-                {user.creditBalance ? formatCurrency(parseFloat(user.creditBalance.toString())) : 'R 0.00'}
-              </span>
+          {/* Credit Balance for All Users */}
+          {user && (
+            <div className="mr-4 flex items-center">
+              <div className="relative">
+                <div className="flex items-center space-x-2 bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl px-4 py-2 shadow-md border border-primary/10">
+                  <div className="bg-gradient-to-br from-primary to-primary-dark rounded-full p-2 shadow-inner">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 text-white"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="10"/>
+                      <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/>
+                      <path d="M12 18V6"/>
+                    </svg>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs text-neutral-dark font-medium">Credit Balance</span>
+                    <span className="text-base font-bold bg-gradient-to-r from-primary to-primary-dark inline-block text-transparent bg-clip-text">
+                      {user.creditBalance ? formatCurrency(parseFloat(user.creditBalance.toString())) : 'R 0.00'}
+                    </span>
+                  </div>
+                </div>
+                <div className="absolute -top-1 -right-1 bg-success text-white text-xs font-bold px-1.5 py-0.5 rounded-md shadow-sm">
+                  Active
+                </div>
+              </div>
             </div>
           )}
 
