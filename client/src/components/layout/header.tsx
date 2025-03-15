@@ -71,8 +71,8 @@ export function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
           {user && (
             <div className="mr-4 flex items-center">
               <div className="relative">
-                <div className="flex items-center space-x-2 bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl px-4 py-2 shadow-md border border-primary/10">
-                  <div className="bg-gradient-to-br from-primary to-primary-dark rounded-full p-2 shadow-inner">
+                <div className="flex items-center space-x-2 bg-background rounded-xl px-4 py-2 shadow-md border border-primary/20">
+                  <div className="bg-primary rounded-full p-2 shadow">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-5 w-5 text-white"
@@ -90,7 +90,7 @@ export function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
                   </div>
                   <div className="flex flex-col">
                     <span className="text-xs text-neutral-dark font-medium">Credit Balance</span>
-                    <span className="text-base font-bold bg-gradient-to-r from-primary to-primary-dark inline-block text-transparent bg-clip-text">
+                    <span className="text-base font-bold text-primary">
                       {user.creditBalance ? formatCurrency(parseFloat(user.creditBalance.toString())) : 'R 0.00'}
                     </span>
                   </div>

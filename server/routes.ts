@@ -117,6 +117,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to create product category" });
     }
   });
+  
+  app.patch("/api/product-categories/:id", async (req, res) => {
+    try {
+      if (!req.isAuthenticated() || req.user?.role !== "admin") {
+        return res.status(403).json({ message: "Not authorized" });
+      }
+      
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid category ID" });
+      }
+      
+      const updatedCategory = await storage.updateProductCategory(id, req.body);
+      if (!updatedCategory) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+      
+      res.json(updatedCategory);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update product category" });
+    }
+  });
+  
+  app.delete("/api/product-categories/:id", async (req, res) => {
+    try {
+      if (!req.isAuthenticated() || req.user?.role !== "admin") {
+        return res.status(403).json({ message: "Not authorized" });
+      }
+      
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid category ID" });
+      }
+      
+      // Check if any products are using this category
+      const productsInCategory = await storage.getProductsByCategory(id);
+      if (productsInCategory.length > 0) {
+        return res.status(400).json({ 
+          message: "Cannot delete category with products. Please move or delete the products first." 
+        });
+      }
+      
+      const result = await storage.deleteProductCategory(id);
+      if (!result) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+      
+      res.sendStatus(204);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete product category" });
+    }
+  });
 
   // Product Routes
   app.get("/api/products", async (req, res) => {

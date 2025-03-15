@@ -2,6 +2,9 @@ import { pgTable, text, serial, integer, boolean, decimal, timestamp, jsonb } fr
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Define common types
+export type MasterCategory = 'MTN Fixed' | 'MTN GSM';
+
 // User model with roles
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
