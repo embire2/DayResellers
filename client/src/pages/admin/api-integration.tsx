@@ -19,6 +19,7 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -58,7 +59,7 @@ const apiSettingSchema = z.object({
   name: z.string().min(1, "Name is required"),
   endpoint: z.string().min(1, "Endpoint is required"),
   masterCategory: z.enum(["MTN Fixed", "MTN GSM"]),
-  isEnabled: z.boolean().default(true),
+  isEnabled: z.boolean().default(true).optional(),
 });
 
 export default function ApiIntegration() {
@@ -156,7 +157,7 @@ export default function ApiIntegration() {
       name: apiSetting.name,
       endpoint: apiSetting.endpoint,
       masterCategory: apiSetting.masterCategory as "MTN Fixed" | "MTN GSM",
-      isEnabled: apiSetting.isEnabled,
+      isEnabled: apiSetting.isEnabled === null ? true : apiSetting.isEnabled,
     });
     setIsApiSettingModalOpen(true);
   };
