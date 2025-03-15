@@ -36,6 +36,7 @@ function Router() {
       <ProtectedRoute path="/admin/products-pricing" component={ProductsPricing} requiredRole="admin" />
       <ProtectedRoute path="/admin/dashboard-designer" component={DashboardDesigner} requiredRole="admin" />
       <ProtectedRoute path="/admin/api-integration" component={ApiIntegration} requiredRole="admin" />
+      <ProtectedRoute path="/admin/api-test" component={ApiTest} requiredRole="admin" />
 
       {/* Protected Reseller Routes */}
       <ProtectedRoute path="/reseller" component={ResellerDashboard} requiredRole="reseller" />

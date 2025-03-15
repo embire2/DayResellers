@@ -325,4 +325,45 @@ export const setupApiIntegration = (app: Express) => {
       res.status(500).json({ success: false, error: errorMessage });
     }
   });
+  
+  // API Test Console endpoint
+  app.post('/api/test-broadband-api', async (req, res) => {
+    try {
+      if (!req.isAuthenticated() || req.user?.role !== 'admin') {
+        return res.status(403).json({ success: false, error: 'Not authorized' });
+      }
+      
+      const { masterCategory, endpoint, params } = req.body;
+      
+      if (!masterCategory || !endpoint) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Master category and endpoint are required' 
+        });
+      }
+      
+      if (masterCategory !== 'MTN Fixed' && masterCategory !== 'MTN GSM') {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Invalid master category. Must be "MTN Fixed" or "MTN GSM"' 
+        });
+      }
+      
+      // Build the full endpoint path
+      const fullEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+      
+      // Determine the method based on presence of params
+      const method = Object.keys(params || {}).length > 0 ? 'POST' : 'GET';
+      
+      // Execute the API request
+      const result = await makeApiRequest(masterCategory, fullEndpoint, method, params);
+      res.json(result);
+    } catch (error) {
+      let errorMessage = 'Failed to execute API test';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      res.status(500).json({ success: false, error: errorMessage });
+    }
+  });
 };
