@@ -278,7 +278,16 @@ export class MemStorage implements IStorage {
   async createProductCategory(category: InsertProductCategory): Promise<ProductCategory> {
     const id = this.productCategoryIdCounter++;
     const now = new Date();
-    const newCategory: ProductCategory = { ...category, id, createdAt: now };
+    // Ensure we're handling nulls properly for optional fields
+    const newCategory: ProductCategory = { 
+      id, 
+      name: category.name,
+      masterCategory: category.masterCategory,
+      createdAt: now,
+      description: category.description ?? null,
+      parentId: category.parentId ?? null,
+      isActive: category.isActive ?? true
+    };
     this.productCategories.set(id, newCategory);
     return newCategory;
   }
@@ -466,8 +475,8 @@ export class MemStorage implements IStorage {
     return Array.from(this.transactions.values())
       .filter(transaction => transaction.userId === userId)
       .sort((a, b) => {
-        const dateA = a.createdAt instanceof Date ? a.createdAt : new Date(a.createdAt);
-        const dateB = b.createdAt instanceof Date ? b.createdAt : new Date(b.createdAt);
+        const dateA = a.createdAt instanceof Date ? a.createdAt : new Date(a.createdAt || new Date());
+        const dateB = b.createdAt instanceof Date ? b.createdAt : new Date(b.createdAt || new Date());
         return dateB.getTime() - dateA.getTime(); // Sort by most recent first
       });
   }
@@ -475,8 +484,8 @@ export class MemStorage implements IStorage {
   async getRecentTransactions(limit: number): Promise<Transaction[]> {
     return Array.from(this.transactions.values())
       .sort((a, b) => {
-        const dateA = a.createdAt instanceof Date ? a.createdAt : new Date(a.createdAt);
-        const dateB = b.createdAt instanceof Date ? b.createdAt : new Date(b.createdAt);
+        const dateA = a.createdAt instanceof Date ? a.createdAt : new Date(a.createdAt || new Date());
+        const dateB = b.createdAt instanceof Date ? b.createdAt : new Date(b.createdAt || new Date());
         return dateB.getTime() - dateA.getTime(); // Sort by most recent first
       })
       .slice(0, limit);
