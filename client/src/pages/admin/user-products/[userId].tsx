@@ -61,7 +61,16 @@ export default function UserProductsPage() {
   const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ['/api/users', userId],
     queryFn: () => getQueryFn<User>({ on401: "returnNull" })(`/api/users/${userId}`),
-    enabled: !!userId
+    enabled: !!userId,
+    retry: 1,
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to fetch user details. Please try again.",
+        variant: "destructive"
+      });
+      console.error("Error fetching user:", error);
+    }
   });
 
   const { data: products = [], isLoading: productsLoading } = useQuery({

@@ -74,8 +74,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid user ID" });
       }
       
+      // Add logging to debug user retrieval
+      logger.debug(`Fetching user with ID: ${userId}`, { userId });
+      
       const user = await storage.getUser(userId);
       if (!user) {
+        logger.warn(`User not found with ID: ${userId}`, { userId });
         return res.status(404).json({ message: "User not found" });
       }
       
