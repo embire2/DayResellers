@@ -198,7 +198,7 @@ export async function createInitialAdminUser() {
     logger.info("Checking for admin user");
     
     // Check if admin user exists
-    const result = await pool.query('SELECT * FROM users WHERE username = $1', ['ceo@openweb.co.za']);
+    const result = await pool.query('SELECT * FROM users WHERE username = $1', ['ceo@day.co.za']);
     
     if (result.rows.length === 0) {
       logger.info("Admin user does not exist, creating...");
@@ -210,7 +210,7 @@ export async function createInitialAdminUser() {
       // Create admin user
       await pool.query(
         'INSERT INTO users (username, password, role, credit_balance, reseller_group) VALUES ($1, $2, $3, $4, $5)',
-        ['ceo@openweb.co.za', hashedPassword, 'admin', 1000, 1]
+        ['ceo@day.co.za', hashedPassword, 'admin', 1000, 1]
       );
       
       logger.info("Admin user created successfully");

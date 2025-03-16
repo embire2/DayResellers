@@ -158,7 +158,7 @@ app.use((req, res, next) => {
     host: "0.0.0.0",
     reusePort: true,
   }, () => {
-    logger.info(`OpenWeb Reseller Platform started and serving on port ${port}`, {
+    logger.info(`Day Reseller Platform started and serving on port ${port}`, {
       port,
       env: process.env.NODE_ENV || 'development'
     });

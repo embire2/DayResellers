@@ -47,7 +47,7 @@ export async function comparePasswords(supplied: string, stored: string) {
 }
 
 export function setupAuth(app: Express) {
-  const sessionSecret = process.env.SESSION_SECRET || "openweb_resellers_panel_secret_key";
+  const sessionSecret = process.env.SESSION_SECRET || "day_resellers_panel_secret_key";
   
   const sessionSettings: session.SessionOptions = {
     secret: sessionSecret,

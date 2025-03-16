@@ -90,13 +90,13 @@ export default function AuthPage() {
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
           <img 
-            src="/images/ow-emblem.jpg" 
-            alt="OpenWeb Logo" 
+            src="/images/day-logo.png" 
+            alt="Day Logo" 
             className="h-24 w-auto mb-4" 
           />
         </div>
         <h1 className="text-center text-3xl font-extrabold text-neutral-darker">
-          OpenWeb.co.za
+          Day.co.za
         </h1>
         <h2 className="mt-2 text-center text-xl text-primary">
           Reseller Management Panel
@@ -174,7 +174,7 @@ export default function AuthPage() {
               <CardHeader>
                 <CardTitle>Create an account</CardTitle>
                 <CardDescription>
-                  Register to start managing your OpenWeb.co.za products
+                  Register to start managing your Day.co.za products
                 </CardDescription>
               </CardHeader>
               <CardContent>

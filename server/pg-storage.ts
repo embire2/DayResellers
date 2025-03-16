@@ -1,5 +1,5 @@
 /**
- * PostgreSQL Storage Implementation for OpenWeb Reseller Platform
+ * PostgreSQL Storage Implementation for Day Reseller Platform
  * This replaces the in-memory storage with a persistent database
  */
 

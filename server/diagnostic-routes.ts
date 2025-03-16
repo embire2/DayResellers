@@ -1,5 +1,5 @@
 /**
- * Diagnostic routes for the OpenWeb Reseller Platform
+ * Diagnostic routes for the Day Reseller Platform
  * Provides debugging and troubleshooting endpoints for administrators
  */
 

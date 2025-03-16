@@ -1,5 +1,5 @@
 /**
- * Advanced logging utility for OpenWeb Reseller Platform
+ * Advanced logging utility for Day Reseller Platform
  * Provides structured logging with severity levels, timestamps, and context
  */
 
