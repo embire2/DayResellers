@@ -38,7 +38,7 @@ export default function Categories() {
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory | null>(null);
 
   // Fetch categories
-  const { data: categories = [], isLoading } = useQuery({ 
+  const { data: categories = [], isLoading } = useQuery<ProductCategory[]>({ 
     queryKey: ['/api/product-categories'],
     throwOnError: true,
   });
@@ -119,9 +119,7 @@ export default function Categories() {
   // Delete category mutation
   const deleteCategoryMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest(`/api/product-categories/${id}`, {
-        method: 'DELETE',
-      });
+      const response = await apiRequest('DELETE', `/api/product-categories/${id}`);
       return response;
     },
     onSuccess: () => {
@@ -160,7 +158,7 @@ export default function Categories() {
       name: category.name,
       description: category.description || "",
       masterCategory: category.masterCategory as MasterCategory,
-      isActive: category.isActive,
+      isActive: category.isActive === null ? true : category.isActive,
       parentId: category.parentId || null,
     });
     setIsEditDialogOpen(true);
@@ -420,7 +418,7 @@ export default function Categories() {
                   </CardContent>
                 )}
                 <CardFooter className="text-sm text-neutral-dark">
-                  Created: {new Date(category.createdAt).toLocaleDateString()}
+                  Created: {category.createdAt ? new Date(category.createdAt).toLocaleDateString() : "N/A"}
                 </CardFooter>
               </Card>
             ))
