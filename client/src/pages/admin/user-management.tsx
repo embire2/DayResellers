@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { 
   Table, 
   TableBody, 
@@ -62,6 +63,7 @@ const updateCreditSchema = z.object({
 
 export default function UserManagement() {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCreditModalOpen, setIsCreditModalOpen] = useState(false);
@@ -444,7 +446,7 @@ export default function UserManagement() {
                           variant="ghost"
                           size="sm"
                           className="text-blue-600"
-                          onClick={() => window.location.href = `/admin/user-products/${user.id}`}
+                          onClick={() => setLocation(`/admin/user-products/${user.id}`)}
                         >
                           <span className="flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
