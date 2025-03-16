@@ -106,29 +106,12 @@ export default function UserManagement() {
         password: "[REDACTED]" // Don't log the actual password
       });
       
-      try {
-        const res = await apiRequest("/api/users", {
-          method: "POST",
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(userData)
-        });
-        
-        if (!res.ok) {
-          // Attempt to parse the error response
-          const errorData = await res.json().catch(() => null);
-          console.error("User creation API error:", errorData);
-          
-          // Throw a detailed error
-          throw new Error(
-            errorData?.message || errorData?.error || `Error: ${res.status} ${res.statusText}`
-          );
-        }
-        
-        return await res.json();
-      } catch (error) {
-        console.error("User creation failed:", error);
-        throw error;
-      }
+      // Use the apiRequest function which already handles error checking and JSON parsing
+      return apiRequest("/api/users", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+      });
     },
     onSuccess: (data) => {
       console.log("User created successfully:", data.username);
@@ -158,7 +141,7 @@ export default function UserManagement() {
   // Update credit mutation
   const updateCreditMutation = useMutation({
     mutationFn: async (data: z.infer<typeof updateCreditSchema>) => {
-      const res = await apiRequest(`/api/users/${data.userId}/credit`, {
+      return apiRequest(`/api/users/${data.userId}/credit`, {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -166,7 +149,6 @@ export default function UserManagement() {
           type: data.type,
         })
       });
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/users'] });
@@ -195,12 +177,11 @@ export default function UserManagement() {
       // Only include password if it was changed (not empty)
       const payload = password ? { ...userData, password } : userData;
       
-      const res = await apiRequest(`/api/users/${userId}`, {
+      return apiRequest(`/api/users/${userId}`, {
         method: "PUT",
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      return res.json();
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/users'] });
