@@ -270,8 +270,8 @@ export default function Categories() {
                       <FormItem>
                         <FormLabel>Parent Category (Optional)</FormLabel>
                         <Select 
-                          onValueChange={(value) => field.onChange(value ? Number(value) : null)} 
-                          defaultValue={field.value ? String(field.value) : ""}
+                          onValueChange={(value) => field.onChange(value && value !== "none" ? Number(value) : null)} 
+                          defaultValue={field.value ? String(field.value) : "none"}
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -279,7 +279,7 @@ export default function Categories() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="">None (Top Level)</SelectItem>
+                            <SelectItem value="none">None (Top Level)</SelectItem>
                             {topLevelCategories.map((category: ProductCategory) => (
                               <SelectItem key={category.id} value={String(category.id)}>
                                 {category.name}
@@ -499,8 +499,8 @@ export default function Categories() {
                   <FormItem>
                     <FormLabel>Parent Category (Optional)</FormLabel>
                     <Select 
-                      onValueChange={(value) => field.onChange(value ? Number(value) : null)} 
-                      defaultValue={field.value ? String(field.value) : ""}
+                      onValueChange={(value) => field.onChange(value && value !== "none" ? Number(value) : null)} 
+                      defaultValue={field.value ? String(field.value) : "none"}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -508,7 +508,7 @@ export default function Categories() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">None (Top Level)</SelectItem>
+                        <SelectItem value="none">None (Top Level)</SelectItem>
                         {topLevelCategories
                           .filter((c: ProductCategory) => c.id !== selectedCategory?.id)
                           .map((category: ProductCategory) => (
