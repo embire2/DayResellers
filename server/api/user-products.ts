@@ -131,11 +131,42 @@ router.post("/", async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Invalid user product data", details: parsed.error });
     }
 
+    // Verify that the user exists before creating the product
+    const userId = parsed.data.userId;
+    const user = await storage.getUser(userId);
+    
+    if (!user) {
+      logger.warn(`POST /user-products - Attempt to create product for non-existent user ID ${userId}`);
+      return res.status(404).json({ error: "User not found" });
+    }
+    
+    // Verify that the product exists
+    const productId = parsed.data.productId;
+    const product = await storage.getProduct(productId);
+    
+    if (!product) {
+      logger.warn(`POST /user-products - Attempt to add non-existent product ID ${productId} to user ${userId}`);
+      return res.status(404).json({ error: "Product not found" });
+    }
+    
+    logger.debug(`Creating user product for user ID ${userId} with product ID ${productId}`);
     const userProduct = await storage.createUserProduct(parsed.data);
+    
+    // Log successful creation
+    logger.info(`User product created successfully`, {
+      userProductId: userProduct.id,
+      userId: userProduct.userId,
+      productId: userProduct.productId,
+      status: userProduct.status
+    });
+    
     res.status(201).json(userProduct);
   } catch (error) {
     recordDiagnosticError(req, error, req.body);
-    logger.error("Error creating user product", { error });
+    logger.error("Error creating user product", { 
+      error,
+      requestBody: { ...req.body, password: req.body.password ? "[REDACTED]" : undefined }
+    });
     res.status(500).json({ error: "Failed to create user product" });
   }
 });

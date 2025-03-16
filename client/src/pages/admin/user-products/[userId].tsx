@@ -309,11 +309,14 @@ export default function UserProductsPage() {
     return apiSetting ? apiSetting.name : 'Unknown Endpoint';
   };
 
-  if (userLoading || productsLoading) {
+  // Display a more comprehensive loading state
+  if (userLoading || productsLoading || apiSettingsLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <p className="ml-2">Loading...</p>
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading user and product data...</p>
+        </div>
       </div>
     );
   }
@@ -324,10 +327,14 @@ export default function UserProductsPage() {
   if (!user) {
     return (
       <div className="container mx-auto py-6">
-        <div className="flex flex-col items-center justify-center p-10">
+        <div className="flex flex-col items-center justify-center p-10 border rounded-lg shadow-sm">
+          <AlertCircle className="h-12 w-12 text-orange-500 mb-4" />
           <h1 className="text-2xl font-bold mb-4">User Not Found</h1>
-          <p className="text-muted-foreground mb-6">The requested user could not be found.</p>
-          <Button variant="outline" onClick={() => setLocation('/admin/users')}>
+          <p className="text-muted-foreground mb-6 text-center max-w-md">
+            The requested user (ID: {userId}) could not be found in the system. 
+            Please check the user ID and try again.
+          </p>
+          <Button onClick={() => setLocation('/admin/users')}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to User Management
           </Button>
@@ -646,15 +653,16 @@ function UserProductsList({
 
   if (userProducts.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-10">
-        <div className="rounded-full bg-yellow-100 p-3 mb-3">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-yellow-500">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-            <line x1="12" y1="9" x2="12" y2="13"/>
-            <line x1="12" y1="17" x2="12.01" y2="17"/>
-          </svg>
-        </div>
-        <p className="text-center text-muted-foreground">No user products found in this category</p>
+      <div className="flex flex-col items-center justify-center p-10 border border-dashed rounded-lg">
+        <PackageOpen className="h-12 w-12 text-yellow-500 mb-3" />
+        <h3 className="text-lg font-medium mb-1">No Products Assigned</h3>
+        <p className="text-center text-muted-foreground mb-4">
+          This user doesn't have any products assigned in this category.
+        </p>
+        <Button variant="outline" size="sm" onClick={() => document.querySelector('[aria-label="Add Product"]')?.click()}>
+          <Plus className="mr-2 h-4 w-4" />
+          Assign New Product
+        </Button>
       </div>
     );
   }
