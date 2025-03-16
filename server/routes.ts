@@ -65,7 +65,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get a specific user by ID
   app.get("/api/users/:id", async (req, res) => {
     try {
-      if (!req.isAuthenticated() || req.user?.role !== "admin") {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      // Allow admins to access any user, resellers only their own user data
+      if (req.user?.role !== "admin" && req.user?.id !== parseInt(req.params.id)) {
         return res.status(403).json({ message: "Not authorized" });
       }
       
