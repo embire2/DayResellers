@@ -37,33 +37,35 @@ export default function ManageUserProducts() {
   // Queries
   const { data: users = [], isLoading: usersLoading } = useQuery({
     queryKey: ['/api/users'],
-    queryFn: getQueryFn({ on401: "returnNull" }),
-    select: (data) => data.filter((u: User) => u.role === 'reseller')
+    queryFn: getQueryFn<User[]>({ on401: "returnNull" }),
+    select: (data) => data.filter((u) => u.role === 'reseller')
   });
 
   const { data: products = [], isLoading: productsLoading } = useQuery({
     queryKey: ['/api/products'],
-    queryFn: getQueryFn({ on401: "returnNull" })
+    queryFn: getQueryFn<Product[]>({ on401: "returnNull" })
   });
 
   const { data: userProducts = [], isLoading: userProductsLoading, refetch: refetchUserProducts } = useQuery({
     queryKey: ['/api/user-products'],
-    queryFn: getQueryFn({ on401: "returnNull" })
+    queryFn: getQueryFn<UserProduct[]>({ on401: "returnNull" })
   });
 
   // Mutations
   const createUserProductMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
+      const payload = {
+        userId: parseInt(data.userId),
+        productId: parseInt(data.productId),
+        username: data.username || null,
+        msisdn: data.msisdn || null,
+        status: data.status,
+        comments: data.comments || null
+      };
       return apiRequest('/api/user-products', {
         method: 'POST',
-        body: JSON.stringify({
-          userId: parseInt(data.userId),
-          productId: parseInt(data.productId),
-          username: data.username || null,
-          msisdn: data.msisdn || null,
-          status: data.status,
-          comments: data.comments || null
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
       });
     },
     onSuccess: () => {
@@ -87,14 +89,16 @@ export default function ManageUserProducts() {
 
   const updateUserProductMutation = useMutation({
     mutationFn: async (data: typeof formData & { id: number }) => {
+      const payload = {
+        username: data.username || null,
+        msisdn: data.msisdn || null,
+        status: data.status,
+        comments: data.comments || null
+      };
       return apiRequest(`/api/user-products/${data.id}`, {
         method: 'PATCH',
-        body: JSON.stringify({
-          username: data.username || null,
-          msisdn: data.msisdn || null,
-          status: data.status,
-          comments: data.comments || null
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
       });
     },
     onSuccess: () => {
