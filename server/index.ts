@@ -3,7 +3,7 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { v4 as uuidv4 } from 'uuid';
 import { logger } from './logger';
-import { checkConnection, runMigrations } from './db';
+import { checkConnection, runMigrations, createInitialAdminUser } from './db';
 
 // Extend Request interface with id property
 declare global {
@@ -99,6 +99,10 @@ app.use((req, res, next) => {
     logger.info("Running database migrations...");
     await runMigrations();
     logger.info("Database migrations completed successfully");
+    
+    // Create initial admin user if it doesn't exist
+    logger.info("Creating initial admin user if needed...");
+    await createInitialAdminUser();
   } catch (error) {
     logger.fatal("Database initialization failed", {}, error as Error);
     process.exit(1);

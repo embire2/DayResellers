@@ -58,7 +58,110 @@ export async function runMigrations() {
       logger.info("Created migration journal file");
     }
     
-    // Run Drizzle migrations
+    // Check if tables exist first
+    try {
+      await pool.query('SELECT 1 FROM users LIMIT 1');
+      logger.info("Database tables already exist, skipping schema creation");
+    } catch (tableError) {
+      // Tables don't exist yet, create schema
+      logger.info("Creating database schema...");
+      
+      // Create schema directly
+      const createTableQueries = [
+        // Users table
+        `CREATE TABLE IF NOT EXISTS users (
+          id SERIAL PRIMARY KEY,
+          username TEXT NOT NULL UNIQUE,
+          password TEXT NOT NULL,
+          role TEXT NOT NULL DEFAULT 'reseller',
+          credit_balance DECIMAL(10, 2) NOT NULL DEFAULT '0',
+          reseller_group INTEGER DEFAULT 1,
+          dashboard_config JSONB,
+          created_at TIMESTAMP DEFAULT NOW()
+        )`,
+        
+        // Product categories table
+        `CREATE TABLE IF NOT EXISTS product_categories (
+          id SERIAL PRIMARY KEY,
+          name TEXT NOT NULL,
+          master_category TEXT NOT NULL,
+          description TEXT,
+          created_at TIMESTAMP DEFAULT NOW()
+        )`,
+        
+        // Products table
+        `CREATE TABLE IF NOT EXISTS products (
+          id SERIAL PRIMARY KEY,
+          name TEXT NOT NULL,
+          description TEXT,
+          base_price DECIMAL(10, 2) NOT NULL,
+          group1_price DECIMAL(10, 2) NOT NULL,
+          group2_price DECIMAL(10, 2) NOT NULL,
+          category_id INTEGER NOT NULL,
+          status TEXT NOT NULL DEFAULT 'active',
+          api_endpoint TEXT,
+          created_at TIMESTAMP DEFAULT NOW()
+        )`,
+        
+        // Clients table
+        `CREATE TABLE IF NOT EXISTS clients (
+          id SERIAL PRIMARY KEY,
+          name TEXT NOT NULL,
+          email TEXT,
+          phone TEXT,
+          reseller_id INTEGER NOT NULL,
+          created_at TIMESTAMP DEFAULT NOW()
+        )`,
+        
+        // Client products table
+        `CREATE TABLE IF NOT EXISTS client_products (
+          id SERIAL PRIMARY KEY,
+          client_id INTEGER NOT NULL,
+          product_id INTEGER NOT NULL,
+          status TEXT NOT NULL DEFAULT 'active',
+          last_billed_date TIMESTAMP DEFAULT NOW(),
+          next_billing_date TIMESTAMP,
+          created_at TIMESTAMP DEFAULT NOW()
+        )`,
+        
+        // API settings table
+        `CREATE TABLE IF NOT EXISTS api_settings (
+          id SERIAL PRIMARY KEY,
+          name TEXT NOT NULL,
+          endpoint TEXT NOT NULL,
+          master_category TEXT NOT NULL,
+          is_enabled BOOLEAN DEFAULT TRUE,
+          created_at TIMESTAMP DEFAULT NOW()
+        )`,
+        
+        // Transactions table
+        `CREATE TABLE IF NOT EXISTS transactions (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER NOT NULL,
+          amount DECIMAL(10, 2) NOT NULL,
+          description TEXT NOT NULL,
+          type TEXT NOT NULL,
+          created_at TIMESTAMP DEFAULT NOW()
+        )`,
+        
+        // Sessions table for authentication
+        `CREATE TABLE IF NOT EXISTS sessions (
+          sid varchar NOT NULL COLLATE "default",
+          sess json NOT NULL,
+          expire timestamp(6) NOT NULL,
+          CONSTRAINT "sessions_pkey" PRIMARY KEY ("sid")
+        )`
+      ];
+      
+      // Execute each query
+      for (const query of createTableQueries) {
+        await pool.query(query);
+      }
+      
+      logger.info("Database schema created successfully");
+    }
+    
+    // Run Drizzle migrations for any future changes
     await migrate(db, { migrationsFolder });
     logger.info("Database migrations completed successfully");
   } catch (error) {
@@ -86,5 +189,36 @@ export async function closeConnection() {
     logger.info("Database connection closed");
   } catch (error) {
     logger.error("Error closing database connection", {}, error as Error);
+  }
+}
+
+// Function to create the initial admin user if it doesn't exist
+export async function createInitialAdminUser() {
+  try {
+    logger.info("Checking for admin user");
+    
+    // Check if admin user exists
+    const result = await pool.query('SELECT * FROM users WHERE username = $1', ['ceo@openweb.co.za']);
+    
+    if (result.rows.length === 0) {
+      logger.info("Admin user does not exist, creating...");
+      
+      // Import the hashPassword function from auth.ts
+      const { hashPassword } = await import('./auth');
+      const hashedPassword = await hashPassword('Maniac20!');
+      
+      // Create admin user
+      await pool.query(
+        'INSERT INTO users (username, password, role, credit_balance, reseller_group) VALUES ($1, $2, $3, $4, $5)',
+        ['ceo@openweb.co.za', hashedPassword, 'admin', 1000, 1]
+      );
+      
+      logger.info("Admin user created successfully");
+    } else {
+      logger.info("Admin user already exists");
+    }
+  } catch (error) {
+    logger.error("Error creating admin user", {}, error as Error);
+    throw error;
   }
 }

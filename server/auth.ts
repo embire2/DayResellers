@@ -17,7 +17,7 @@ declare global {
 
 const scryptAsync = promisify(scrypt);
 
-async function hashPassword(password: string) {
+export async function hashPassword(password: string) {
   try {
     const salt = randomBytes(16).toString("hex");
     const buf = (await scryptAsync(password, salt, 64)) as Buffer;
@@ -28,7 +28,7 @@ async function hashPassword(password: string) {
   }
 }
 
-async function comparePasswords(supplied: string, stored: string) {
+export async function comparePasswords(supplied: string, stored: string) {
   try {
     // For development, if the stored password doesn't contain a salt, assume plain text comparison
     if (!stored.includes('.')) {
