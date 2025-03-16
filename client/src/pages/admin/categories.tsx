@@ -69,11 +69,9 @@ export default function Categories() {
 
   // Create category mutation
   const createCategoryMutation = useMutation({
-    mutationFn: (data: CategoryFormValues) => {
-      return apiRequest('/api/product-categories', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+    mutationFn: async (data: CategoryFormValues) => {
+      const response = await apiRequest('POST', '/api/product-categories', data);
+      return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/product-categories'] });
@@ -87,7 +85,7 @@ export default function Categories() {
     onError: (error) => {
       toast({
         title: "Error",
-        description: `Failed to create category: ${error.message}`,
+        description: `Failed to create category: ${(error as Error).message}`,
         variant: "destructive",
       });
     },
@@ -95,11 +93,10 @@ export default function Categories() {
 
   // Update category mutation
   const updateCategoryMutation = useMutation({
-    mutationFn: (data: CategoryFormValues & { id: number }) => {
-      return apiRequest(`/api/product-categories/${data.id}`, {
-        method: 'PATCH',
-        body: JSON.stringify(data),
-      });
+    mutationFn: async (data: CategoryFormValues & { id: number }) => {
+      const { id, ...updateData } = data;
+      const response = await apiRequest('PATCH', `/api/product-categories/${id}`, updateData);
+      return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/product-categories'] });
@@ -113,7 +110,7 @@ export default function Categories() {
     onError: (error) => {
       toast({
         title: "Error",
-        description: `Failed to update category: ${error.message}`,
+        description: `Failed to update category: ${(error as Error).message}`,
         variant: "destructive",
       });
     },
@@ -121,10 +118,11 @@ export default function Categories() {
 
   // Delete category mutation
   const deleteCategoryMutation = useMutation({
-    mutationFn: (id: number) => {
-      return apiRequest(`/api/product-categories/${id}`, {
+    mutationFn: async (id: number) => {
+      const response = await apiRequest(`/api/product-categories/${id}`, {
         method: 'DELETE',
       });
+      return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/product-categories'] });
@@ -137,7 +135,7 @@ export default function Categories() {
     onError: (error) => {
       toast({
         title: "Error",
-        description: `Failed to delete category: ${error.message}`,
+        description: `Failed to delete category: ${(error as Error).message}`,
         variant: "destructive",
       });
     },

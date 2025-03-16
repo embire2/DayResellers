@@ -273,6 +273,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      // Check if there are subcategories that use this category as a parent
+      const allCategories = await storage.getProductCategories();
+      const hasSubcategories = allCategories.some(cat => cat.parentId === id);
+      if (hasSubcategories) {
+        return res.status(400).json({ 
+          message: "Cannot delete category with subcategories. Please delete or reassign subcategories first." 
+        });
+      }
+      
       const result = await storage.deleteProductCategory(id);
       if (!result) {
         return res.status(404).json({ message: "Category not found" });
@@ -280,6 +289,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.sendStatus(204);
     } catch (error) {
+      logger.error(`Failed to delete product category`, { 
+        requestId: req.id,
+        userId: req.user?.id,
+        categoryId: req.params.id
+      }, error as Error);
+      
       res.status(500).json({ message: "Failed to delete product category" });
     }
   });
