@@ -11,6 +11,7 @@ import { ProtectedRoute } from "./lib/protected-route";
 import AdminDashboard from "@/pages/admin/dashboard";
 import UserManagement from "@/pages/admin/user-management";
 import ProductsPricing from "@/pages/admin/products-pricing";
+import Categories from "@/pages/admin/categories";
 import DashboardDesigner from "@/pages/admin/dashboard-designer";
 import ApiIntegration from "@/pages/admin/api-integration";
 import ApiTest from "@/pages/admin/api-test";
@@ -35,6 +36,7 @@ function Router() {
       {/* Protected Admin Routes */}
       <ProtectedRoute path="/" component={AdminDashboard} requiredRole="admin" />
       <ProtectedRoute path="/admin/users" component={UserManagement} requiredRole="admin" />
+      <ProtectedRoute path="/admin/categories" component={Categories} requiredRole="admin" />
       <ProtectedRoute path="/admin/products-pricing" component={ProductsPricing} requiredRole="admin" />
       <ProtectedRoute path="/admin/dashboard-designer" component={DashboardDesigner} requiredRole="admin" />
       <ProtectedRoute path="/admin/api-integration" component={ApiIntegration} requiredRole="admin" />

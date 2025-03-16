@@ -23,6 +23,8 @@ export const productCategories = pgTable("product_categories", {
   name: text("name").notNull(),
   masterCategory: text("master_category").notNull(), // MTN Fixed or MTN GSM
   description: text("description"),
+  parentId: integer("parent_id"),
+  isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow()
 });
 

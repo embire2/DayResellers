@@ -62,6 +62,20 @@ export function Sidebar() {
                     User Management
                   </Link>
                   <Link 
+                    href="/admin/categories"
+                    className={cn(
+                      "group flex items-center px-2 py-2 text-sm font-medium rounded-md text-neutral-darker hover:bg-neutral-lighter",
+                      isActive("/admin/categories") && "sidebar-item active"
+                    )}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3 text-neutral-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 4h14a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z" />
+                      <path d="M12 14v6" />
+                      <path d="M8 17h8" />
+                    </svg>
+                    Categories
+                  </Link>
+                  <Link 
                     href="/admin/products-pricing"
                     className={cn(
                       "group flex items-center px-2 py-2 text-sm font-medium rounded-md text-neutral-darker hover:bg-neutral-lighter",
