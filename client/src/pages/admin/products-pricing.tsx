@@ -90,16 +90,19 @@ export default function ProductsPricing() {
         ...data,
         categoryId: parseInt(data.categoryId),
       };
-      const res = await apiRequest("POST", "/api/products", formattedData);
-      return res.json();
+      return apiRequest<Product>("/api/products", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formattedData)
+      });
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/products'] });
       setIsProductModalOpen(false);
       form.reset();
       toast({
         title: "Product created",
-        description: "New product has been successfully created",
+        description: `New product "${data.name}" has been successfully created`,
       });
     },
     onError: (error) => {
@@ -119,10 +122,13 @@ export default function ProductsPricing() {
         ...productData,
         categoryId: parseInt(productData.categoryId),
       };
-      const res = await apiRequest("PUT", `/api/products/${id}`, formattedData);
-      return res.json();
+      return apiRequest<Product>(`/api/products/${id}`, {
+        method: "PUT",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formattedData)
+      });
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/products'] });
       setIsProductModalOpen(false);
       setIsEditingProduct(false);
@@ -130,7 +136,7 @@ export default function ProductsPricing() {
       form.reset();
       toast({
         title: "Product updated",
-        description: "Product has been successfully updated",
+        description: `Product "${data.name}" has been successfully updated`,
       });
     },
     onError: (error) => {
