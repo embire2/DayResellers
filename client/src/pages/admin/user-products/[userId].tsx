@@ -229,6 +229,31 @@ export default function UserProductsPage() {
     }
   });
 
+  const updateUserProductMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number, data: Partial<UserProduct> }) => {
+      return apiRequest(`/api/user-products/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/user-products', userId] });
+      toast({
+        title: "Product updated",
+        description: "The product details have been successfully updated.",
+        variant: "default",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update product. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+
   // Handlers
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -300,6 +325,13 @@ export default function UserProductsPage() {
 
   const handleDeleteEndpoint = (endpointId: number) => {
     deleteEndpointMutation.mutate(endpointId);
+  };
+  
+  const handleUpdateUserProduct = (id: number, field: string, value: string) => {
+    updateUserProductMutation.mutate({
+      id,
+      data: { [field]: value === 'N/A' ? null : value }
+    });
   };
 
   const renderProductName = (productId: number) => {
@@ -649,6 +681,7 @@ interface UserProductsListProps {
   renderProductName: (productId: number) => string;
   renderStatusBadge: (status: string) => React.ReactNode;
   renderEndpointName: (apiSettingId: number) => string;
+  onUpdateField?: (id: number, field: string, value: string) => void;
 }
 
 function UserProductsList({ 
@@ -659,7 +692,8 @@ function UserProductsList({
   onDeleteEndpoint,
   renderProductName,
   renderStatusBadge,
-  renderEndpointName
+  renderEndpointName,
+  onUpdateField
 }: UserProductsListProps) {
   if (isLoading) {
     return (
