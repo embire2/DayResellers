@@ -24,7 +24,9 @@ import {
   RefreshCw,
   ArrowLeft, 
   Terminal,
-  Link as LinkIcon
+  Link as LinkIcon,
+  PackageOpen,
+  AlertCircle
 } from "lucide-react";
 
 interface UserProductWithDetails extends UserProduct {
@@ -365,7 +367,7 @@ export default function UserProductsPage() {
             <RefreshCw className="mr-2 h-4 w-4" />
             Refresh
           </Button>
-          <Button onClick={openAddDialog}>
+          <Button onClick={openAddDialog} aria-label="Add Product">
             <Plus className="mr-2 h-4 w-4" />
             Add Product
           </Button>
@@ -653,13 +655,18 @@ function UserProductsList({
 
   if (userProducts.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-10 border border-dashed rounded-lg">
-        <PackageOpen className="h-12 w-12 text-yellow-500 mb-3" />
+      <div className="flex flex-col items-center justify-center p-10 border border-dashed rounded-lg" aria-label="Empty products list">
+        <PackageOpen className="h-12 w-12 text-yellow-500 mb-3" aria-hidden="true" />
         <h3 className="text-lg font-medium mb-1">No Products Assigned</h3>
         <p className="text-center text-muted-foreground mb-4">
           This user doesn't have any products assigned in this category.
         </p>
-        <Button variant="outline" size="sm" onClick={() => document.querySelector('[aria-label="Add Product"]')?.click()}>
+        <Button 
+          variant="primary" 
+          size="sm" 
+          onClick={() => document.querySelector('[aria-label="Add Product"]')?.click()}
+          aria-label="Assign new product to user"
+        >
           <Plus className="mr-2 h-4 w-4" />
           Assign New Product
         </Button>
