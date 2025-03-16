@@ -37,26 +37,13 @@ export default function MyProducts() {
   // Query for user products
   const { data: userProducts = [], isLoading: userProductsLoading, refetch: refetchUserProducts } = useQuery({
     queryKey: ['/api/user-products', user?.id],
-    queryFn: getQueryFn({
+    queryFn: getQueryFn<UserProductWithProduct[]>({
       on401: "returnNull",
     }),
     enabled: !!user?.id
   });
 
-  const renderStatusBadge = (status: string) => {
-    switch (status) {
-      case "active":
-        return <Badge className="bg-green-500">{status}</Badge>;
-      case "pending":
-        return <Badge className="bg-yellow-500">{status}</Badge>;
-      case "suspended":
-        return <Badge className="bg-orange-500">{status}</Badge>;
-      case "cancelled":
-        return <Badge className="bg-red-500">{status}</Badge>;
-      default:
-        return <Badge>{status}</Badge>;
-    }
-  };
+  // Status rendering is handled within each component where needed
 
   const showProductDetails = (product: UserProductWithProduct) => {
     setSelectedProduct(product);
@@ -98,7 +85,7 @@ export default function MyProducts() {
         
         <TabsContent value="active">
           {renderProductsTable(
-            userProducts.filter((p: UserProduct) => p.status === 'active'),
+            userProducts.filter((p) => p.status === 'active'),
             userProductsLoading,
             showProductDetails
           )}
@@ -106,7 +93,7 @@ export default function MyProducts() {
         
         <TabsContent value="pending">
           {renderProductsTable(
-            userProducts.filter((p: UserProduct) => p.status === 'pending'),
+            userProducts.filter((p) => p.status === 'pending'),
             userProductsLoading,
             showProductDetails
           )}
@@ -114,7 +101,7 @@ export default function MyProducts() {
         
         <TabsContent value="cancelled">
           {renderProductsTable(
-            userProducts.filter((p: UserProduct) => p.status === 'cancelled' || p.status === 'suspended'),
+            userProducts.filter((p) => p.status === 'cancelled' || p.status === 'suspended'),
             userProductsLoading,
             showProductDetails
           )}
@@ -135,7 +122,17 @@ export default function MyProducts() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <h3 className="text-sm font-medium">Status</h3>
-                  <p>{renderStatusBadge(selectedProduct.status)}</p>
+                  <div>
+                    {(() => {
+                      switch (selectedProduct.status) {
+                        case "active": return <Badge className="bg-green-500">{selectedProduct.status}</Badge>;
+                        case "pending": return <Badge className="bg-yellow-500">{selectedProduct.status}</Badge>;
+                        case "suspended": return <Badge className="bg-orange-500">{selectedProduct.status}</Badge>;
+                        case "cancelled": return <Badge className="bg-red-500">{selectedProduct.status}</Badge>;
+                        default: return <Badge>{selectedProduct.status}</Badge>;
+                      }
+                    })()}
+                  </div>
                 </div>
                 <div>
                   <h3 className="text-sm font-medium">Username</h3>
@@ -218,8 +215,21 @@ function renderProductsTable(
     );
   }
 
-  // Create a reference to renderStatusBadge in the parent component scope
-  const statusBadgeRenderer = renderStatusBadge;
+  // Function to render status badges within this scope
+  const statusBadgeRenderer = (status: string) => {
+    switch (status) {
+      case "active":
+        return <Badge className="bg-green-500">{status}</Badge>;
+      case "pending":
+        return <Badge className="bg-yellow-500">{status}</Badge>;
+      case "suspended":
+        return <Badge className="bg-orange-500">{status}</Badge>;
+      case "cancelled":
+        return <Badge className="bg-red-500">{status}</Badge>;
+      default:
+        return <Badge>{status}</Badge>;
+    }
+  };
 
   return (
     <div className="rounded-md border mt-4">
