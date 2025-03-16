@@ -129,6 +129,22 @@ export function Sidebar() {
                   </svg>
                   API Test Console
                 </Link>
+                <Link 
+                  href="/admin/user-products"
+                  className={cn(
+                    "group flex items-center px-2 py-2 text-sm font-medium rounded-md text-neutral-darker hover:bg-neutral-lighter",
+                    isActive("/admin/user-products") && "sidebar-item active"
+                  )}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3 text-neutral-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M22 12h-4" />
+                    <path d="M18 14v-4" />
+                    <path d="M15 12h-4" />
+                  </svg>
+                  User Products
+                </Link>
               </div>
             )}
 
@@ -197,6 +213,27 @@ export function Sidebar() {
                     <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
                   </svg>
                   Products
+                </Link>
+                <Link 
+                  href="/reseller/my-products"
+                  className={cn(
+                    "group flex items-center px-2 py-2 text-sm font-medium rounded-md text-neutral-darker hover:bg-neutral-lighter",
+                    isActive("/reseller/my-products") && "sidebar-item active"
+                  )}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3 text-neutral-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect width="18" height="18" x="3" y="3" rx="2" />
+                    <path d="M7 7h.01" />
+                    <path d="M17 7h.01" />
+                    <path d="M12 7h.01" />
+                    <path d="M7 12h.01" />
+                    <path d="M17 12h.01" />
+                    <path d="M12 12h.01" />
+                    <path d="M7 17h.01" />
+                    <path d="M17 17h.01" />
+                    <path d="M12 17h.01" />
+                  </svg>
+                  My Products
                 </Link>
                 <Link 
                   href="/reseller/billing"

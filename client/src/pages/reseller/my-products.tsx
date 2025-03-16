@@ -14,13 +14,24 @@ import {
   DialogContent, 
   DialogDescription, 
   DialogHeader, 
-  DialogTitle, 
+  DialogTitle,
   DialogTrigger 
 } from "@/components/ui/dialog";
 
+// Define the extended UserProduct type with product relation
+interface UserProductWithProduct extends UserProduct {
+  product: Product;
+  endpoints?: Array<{
+    id: number;
+    apiSetting?: {
+      name: string;
+    }
+  }>;
+}
+
 export default function MyProducts() {
   const { user } = useAuth();
-  const [selectedProduct, setSelectedProduct] = useState<(UserProduct & { product: Product }) | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<UserProductWithProduct | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
 
   // Query for user products
@@ -47,7 +58,7 @@ export default function MyProducts() {
     }
   };
 
-  const showProductDetails = (product: UserProduct & { product: Product }) => {
+  const showProductDetails = (product: UserProductWithProduct) => {
     setSelectedProduct(product);
     setDetailsOpen(true);
   };
@@ -136,7 +147,7 @@ export default function MyProducts() {
                 </div>
                 <div>
                   <h3 className="text-sm font-medium">Created</h3>
-                  <p>{new Date(selectedProduct.createdAt).toLocaleDateString()}</p>
+                  <p>{selectedProduct.createdAt ? new Date(selectedProduct.createdAt).toLocaleDateString() : 'N/A'}</p>
                 </div>
               </div>
 
@@ -184,10 +195,12 @@ export default function MyProducts() {
 }
 
 function renderProductsTable(
-  products: any[],
+  products: UserProductWithProduct[] | unknown,
   isLoading: boolean,
-  onViewDetails: (product: any) => void
+  onViewDetails: (product: UserProductWithProduct) => void
 ) {
+  const productArray = products as UserProductWithProduct[];
+  
   if (isLoading) {
     return (
       <div className="flex justify-center p-10">
@@ -196,7 +209,7 @@ function renderProductsTable(
     );
   }
 
-  if (products.length === 0) {
+  if (!productArray || productArray.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-10">
         <AlertTriangle className="h-12 w-12 text-yellow-500 mb-4" />
@@ -204,6 +217,9 @@ function renderProductsTable(
       </div>
     );
   }
+
+  // Create a reference to renderStatusBadge in the parent component scope
+  const statusBadgeRenderer = renderStatusBadge;
 
   return (
     <div className="rounded-md border mt-4">
@@ -219,13 +235,13 @@ function renderProductsTable(
           </TableRow>
         </TableHeader>
         <TableBody>
-          {products.map((product: any) => (
+          {productArray.map((product) => (
             <TableRow key={product.id}>
               <TableCell className="font-medium">{product.product?.name || 'Unknown'}</TableCell>
               <TableCell>{product.username || 'N/A'}</TableCell>
               <TableCell>{product.msisdn || 'N/A'}</TableCell>
               <TableCell>
-                {renderStatusBadge(product.status)}
+                {statusBadgeRenderer(product.status)}
               </TableCell>
               <TableCell>
                 <Button
