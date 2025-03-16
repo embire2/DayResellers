@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
+import { dayLogoBase64 } from "@/assets/day-logo";
 
 export function Sidebar() {
   const [location] = useLocation();
@@ -16,7 +17,7 @@ export function Sidebar() {
         <div className="flex items-center h-16 flex-shrink-0 px-4 bg-primary">
           <div className="flex items-center">
             <img 
-              src="/day-logo.png" 
+              src={dayLogoBase64} 
               alt="Day Logo" 
               className="h-8 w-auto mr-2" 
             />
