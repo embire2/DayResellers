@@ -17,11 +17,14 @@ export function MainLayout({ children }: MainLayoutProps) {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      {/* Mobile sidebar */}
+      {/* Mobile sidebar - only visible when sidebarOpen is true */}
       {sidebarOpen && (
         <div className="md:hidden">
           <div className="fixed inset-0 flex z-40">
-            <div className="fixed inset-0" onClick={() => setSidebarOpen(false)}>
+            <div 
+              className="fixed inset-0" 
+              onClick={() => setSidebarOpen(false)}
+            >
               <div className="absolute inset-0 bg-neutral-darker opacity-75"></div>
             </div>
             <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white">
@@ -55,8 +58,10 @@ export function MainLayout({ children }: MainLayoutProps) {
         </div>
       )}
 
-      {/* Static sidebar for desktop */}
-      <Sidebar />
+      {/* Static sidebar for desktop - only visible on md screens and up */}
+      <div className="hidden md:flex md:flex-shrink-0">
+        <Sidebar />
+      </div>
 
       {/* Main content area */}
       <div className="flex flex-col w-0 flex-1 overflow-hidden">
