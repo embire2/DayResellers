@@ -5,6 +5,8 @@ import {
   clients, type Client, type InsertClient,
   clientProducts, type ClientProduct, type InsertClientProduct,
   apiSettings, type ApiSetting, type InsertApiSetting,
+  userProducts, type UserProduct, type InsertUserProduct,
+  userProductEndpoints, type UserProductEndpoint, type InsertUserProductEndpoint,
   transactions, type Transaction, type InsertTransaction
 } from "@shared/schema";
 import { DashboardConfig } from "@shared/types";
@@ -57,6 +59,20 @@ export interface IStorage {
   getApiSettingsByMaster(masterCategory: string): Promise<ApiSetting[]>;
   updateApiSetting(id: number, data: Partial<ApiSetting>): Promise<ApiSetting | undefined>;
   
+  // User Products operations
+  createUserProduct(userProduct: InsertUserProduct): Promise<UserProduct>;
+  getUserProducts(): Promise<UserProduct[]>;
+  getUserProductsByUser(userId: number): Promise<UserProduct[]>;
+  getUserProduct(id: number): Promise<UserProduct | undefined>;
+  updateUserProduct(id: number, data: Partial<UserProduct>): Promise<UserProduct | undefined>;
+  deleteUserProduct(id: number): Promise<boolean>;
+  
+  // User Product Endpoints operations
+  createUserProductEndpoint(endpoint: InsertUserProductEndpoint): Promise<UserProductEndpoint>;
+  getUserProductEndpoints(userProductId: number): Promise<UserProductEndpoint[]>;
+  updateUserProductEndpoint(id: number, data: Partial<UserProductEndpoint>): Promise<UserProductEndpoint | undefined>;
+  deleteUserProductEndpoint(id: number): Promise<boolean>;
+  
   // Transaction operations
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
   getTransactionsByUser(userId: number): Promise<Transaction[]>;
@@ -73,6 +89,8 @@ export class MemStorage implements IStorage {
   private clients: Map<number, Client>;
   private clientProducts: Map<number, ClientProduct>;
   private apiSettings: Map<number, ApiSetting>;
+  private userProducts: Map<number, UserProduct>;
+  private userProductEndpoints: Map<number, UserProductEndpoint>;
   private transactions: Map<number, Transaction>;
 
   // Session store
@@ -84,6 +102,8 @@ export class MemStorage implements IStorage {
   private clientIdCounter: number;
   private clientProductIdCounter: number;
   private apiSettingIdCounter: number;
+  private userProductIdCounter: number;
+  private userProductEndpointIdCounter: number;
   private transactionIdCounter: number;
 
   constructor() {
@@ -93,6 +113,8 @@ export class MemStorage implements IStorage {
     this.clients = new Map();
     this.clientProducts = new Map();
     this.apiSettings = new Map();
+    this.userProducts = new Map();
+    this.userProductEndpoints = new Map();
     this.transactions = new Map();
 
     this.userIdCounter = 1;
@@ -101,6 +123,8 @@ export class MemStorage implements IStorage {
     this.clientIdCounter = 1;
     this.clientProductIdCounter = 1;
     this.apiSettingIdCounter = 1;
+    this.userProductIdCounter = 1;
+    this.userProductEndpointIdCounter = 1;
     this.transactionIdCounter = 1;
 
     this.sessionStore = new MemoryStore({
@@ -470,6 +494,89 @@ export class MemStorage implements IStorage {
     const updatedSetting = { ...setting, ...data };
     this.apiSettings.set(id, updatedSetting);
     return updatedSetting;
+  }
+  
+  // User Products operations
+  async createUserProduct(userProduct: InsertUserProduct): Promise<UserProduct> {
+    const id = this.userProductIdCounter++;
+    const now = new Date();
+    
+    const newUserProduct: UserProduct = {
+      id,
+      userId: userProduct.userId,
+      productId: userProduct.productId,
+      username: userProduct.username ?? null,
+      msisdn: userProduct.msisdn ?? null,
+      comments: userProduct.comments ?? null,
+      status: userProduct.status ?? 'active',
+      createdAt: now
+    };
+    
+    this.userProducts.set(id, newUserProduct);
+    return newUserProduct;
+  }
+  
+  async getUserProducts(): Promise<UserProduct[]> {
+    return Array.from(this.userProducts.values());
+  }
+  
+  async getUserProductsByUser(userId: number): Promise<UserProduct[]> {
+    return Array.from(this.userProducts.values()).filter(
+      (userProduct) => userProduct.userId === userId
+    );
+  }
+  
+  async getUserProduct(id: number): Promise<UserProduct | undefined> {
+    return this.userProducts.get(id);
+  }
+  
+  async updateUserProduct(id: number, data: Partial<UserProduct>): Promise<UserProduct | undefined> {
+    const userProduct = this.userProducts.get(id);
+    if (!userProduct) return undefined;
+    
+    const updatedUserProduct = { ...userProduct, ...data };
+    this.userProducts.set(id, updatedUserProduct);
+    return updatedUserProduct;
+  }
+  
+  async deleteUserProduct(id: number): Promise<boolean> {
+    return this.userProducts.delete(id);
+  }
+  
+  // User Product Endpoints operations
+  async createUserProductEndpoint(endpoint: InsertUserProductEndpoint): Promise<UserProductEndpoint> {
+    const id = this.userProductEndpointIdCounter++;
+    const now = new Date();
+    
+    const newEndpoint: UserProductEndpoint = {
+      id,
+      userProductId: endpoint.userProductId,
+      apiSettingId: endpoint.apiSettingId,
+      customParameters: endpoint.customParameters ?? null,
+      createdAt: now
+    };
+    
+    this.userProductEndpoints.set(id, newEndpoint);
+    return newEndpoint;
+  }
+  
+  async getUserProductEndpoints(userProductId: number): Promise<UserProductEndpoint[]> {
+    return Array.from(this.userProductEndpoints.values()).filter(
+      (endpoint) => endpoint.userProductId === userProductId
+    );
+  }
+  
+  async updateUserProductEndpoint(id: number, data: Partial<UserProductEndpoint>): Promise<UserProductEndpoint | undefined> {
+    const endpoint = this.userProductEndpoints.get(id);
+    if (!endpoint) return undefined;
+    
+    const updatedEndpoint = { ...endpoint, ...data };
+    this.userProductEndpoints.set(id, updatedEndpoint);
+    return updatedEndpoint;
+  }
+  
+  async deleteUserProductEndpoint(id: number): Promise<boolean> {
+    return this.userProductEndpoints.delete(id);
   }
 
   // Transaction operations
