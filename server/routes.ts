@@ -17,6 +17,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Setup diagnostic routes
   setupDiagnosticRoutes(app);
+  
+  // API Settings routes
+  app.get("/api/api-settings", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      const apiSettings = await storage.getApiSettings();
+      res.json(apiSettings);
+    } catch (error) {
+      logger.error(`Failed to fetch API settings`, { 
+        requestId: req.id,
+        userId: req.user?.id 
+      }, error as Error);
+      
+      res.status(500).json({ message: "Failed to fetch API settings" });
+    }
+  });
 
   // User Management Routes
   app.get("/api/users", async (req, res) => {
@@ -40,6 +59,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }, error as Error);
       
       res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+  
+  // Get a specific user by ID
+  app.get("/api/users/:id", async (req, res) => {
+    try {
+      if (!req.isAuthenticated() || req.user?.role !== "admin") {
+        return res.status(403).json({ message: "Not authorized" });
+      }
+      
+      const userId = parseInt(req.params.id);
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Remove password from response
+      const { password, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      logger.error(`Failed to fetch user`, { 
+        requestId: req.id,
+        userId: req.user?.id,
+        targetUserId: req.params.id
+      }, error as Error);
+      
+      res.status(500).json({ message: "Failed to fetch user" });
     }
   });
   
