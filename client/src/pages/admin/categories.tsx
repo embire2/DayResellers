@@ -74,8 +74,11 @@ export default function Categories() {
   // Create category mutation
   const createCategoryMutation = useMutation({
     mutationFn: async (data: CategoryFormValues) => {
-      const response = await apiRequest('POST', '/api/product-categories', data);
-      return response;
+      return apiRequest('/api/product-categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/product-categories'] });

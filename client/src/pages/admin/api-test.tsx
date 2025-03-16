@@ -79,15 +79,15 @@ export default function ApiTest() {
         }
       }
 
-      const response = await apiRequest(
-        'POST',
-        '/api/test-broadband-api',
-        {
+      const response = await apiRequest('/api/test-broadband-api', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           masterCategory: data.masterCategory,
           endpoint: data.endpoint,
           params,
-        }
-      );
+        })
+      });
 
       const result = await response.json();
       setApiResponse(result);
