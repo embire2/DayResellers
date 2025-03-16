@@ -172,6 +172,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const amountValue = parseFloat(amount);
       
       let newBalance = currentBalance;
+      if (type === "add") {
+        newBalance = currentBalance + amountValue;
+      } else {
+        newBalance = currentBalance - amountValue;
+      }
+      
       let transactionType = type === "add" ? "credit" : "debit";
       let transactionAmount = amountValue;
       let description = type === "add" ? "Credit added by admin" : "Credit deducted by admin";

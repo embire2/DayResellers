@@ -63,8 +63,10 @@ const updateCreditSchema = z.object({
 export default function UserManagement() {
   const { toast } = useToast();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCreditModalOpen, setIsCreditModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   // Fetch users
   const { data: users, isLoading } = useQuery<User[]>({
@@ -105,7 +107,11 @@ export default function UserManagement() {
       });
       
       try {
-        const res = await apiRequest("POST", "/api/users", userData);
+        const res = await apiRequest("/api/users", {
+          method: "POST",
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(userData)
+        });
         
         if (!res.ok) {
           // Attempt to parse the error response
@@ -152,9 +158,13 @@ export default function UserManagement() {
   // Update credit mutation
   const updateCreditMutation = useMutation({
     mutationFn: async (data: z.infer<typeof updateCreditSchema>) => {
-      const res = await apiRequest("POST", `/api/users/${data.userId}/credit`, {
-        amount: data.amount,
-        type: data.type,
+      const res = await apiRequest(`/api/users/${data.userId}/credit`, {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: data.amount,
+          type: data.type,
+        })
       });
       return res.json();
     },
@@ -176,8 +186,47 @@ export default function UserManagement() {
     },
   });
 
+  // Update user mutation
+  const updateUserMutation = useMutation({
+    mutationFn: async (data: z.infer<typeof createUserSchema>) => {
+      const { confirmPassword, password, ...userData } = data;
+      const userId = selectedUser?.id;
+
+      // Only include password if it was changed (not empty)
+      const payload = password ? { ...userData, password } : userData;
+      
+      const res = await apiRequest(`/api/users/${userId}`, {
+        method: "PUT",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+      setIsEditModalOpen(false);
+      form.reset();
+      setIsEditing(false);
+      toast({
+        title: "User updated",
+        description: `User "${data.username}" has been successfully updated`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error updating user",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const onSubmit = (values: z.infer<typeof createUserSchema>) => {
-    createUserMutation.mutate(values);
+    if (isEditing && selectedUser) {
+      updateUserMutation.mutate(values);
+    } else {
+      createUserMutation.mutate(values);
+    }
   };
 
   const onCreditSubmit = (values: z.infer<typeof updateCreditSchema>) => {
@@ -188,6 +237,22 @@ export default function UserManagement() {
     setSelectedUser(user);
     creditForm.setValue("userId", user.id);
     setIsCreditModalOpen(true);
+  };
+  
+  const openEditModal = (user: User) => {
+    setSelectedUser(user);
+    setIsEditing(true);
+    
+    // Set form values from the selected user
+    form.setValue("username", user.username);
+    form.setValue("role", user.role as "admin" | "reseller");
+    form.setValue("resellerGroup", user.resellerGroup?.toString() || "1");
+    form.setValue("creditBalance", user.creditBalance?.toString() || "0");
+    // Don't set the password fields - they should be left blank when editing
+    form.setValue("password", "");
+    form.setValue("confirmPassword", "");
+    
+    setIsEditModalOpen(true);
   };
 
   return (
@@ -389,6 +454,7 @@ export default function UserManagement() {
                           variant="ghost"
                           size="sm"
                           className="text-neutral-darker"
+                          onClick={() => openEditModal(user)}
                         >
                           <Edit className="h-4 w-4 mr-1" />
                           Edit
@@ -463,6 +529,138 @@ export default function UserManagement() {
                       </>
                     ) : (
                       "Update Credit"
+                    )}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
+        
+        {/* Edit User Modal */}
+        <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Edit User</DialogTitle>
+              <DialogDescription>
+                {selectedUser && `Update details for user: ${selectedUser.username}`}
+              </DialogDescription>
+            </DialogHeader>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Username</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter username" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password (leave blank to keep current)</FormLabel>
+                      <FormControl>
+                        <Input type="password" placeholder="Enter new password" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Confirm Password</FormLabel>
+                      <FormControl>
+                        <Input type="password" placeholder="Confirm new password" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="role"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Role</FormLabel>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select role" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="admin">Admin</SelectItem>
+                          <SelectItem value="reseller">Reseller</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="resellerGroup"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Reseller Group</FormLabel>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select group" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="1">Group 1</SelectItem>
+                          <SelectItem value="2">Group 2</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="creditBalance"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Credit Balance</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          placeholder="0.00" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <DialogFooter>
+                  <Button type="submit" disabled={updateUserMutation.isPending}>
+                    {updateUserMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Updating...
+                      </>
+                    ) : (
+                      "Update User"
                     )}
                   </Button>
                 </DialogFooter>
