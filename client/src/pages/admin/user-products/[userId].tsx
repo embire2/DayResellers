@@ -440,6 +440,7 @@ export default function UserProductsPage() {
             renderProductName={renderProductName}
             renderStatusBadge={renderStatusBadge}
             renderEndpointName={renderEndpointName}
+            onUpdateField={handleUpdateUserProduct}
           />
         </TabsContent>
         
@@ -453,6 +454,7 @@ export default function UserProductsPage() {
             renderProductName={renderProductName}
             renderStatusBadge={renderStatusBadge}
             renderEndpointName={renderEndpointName}
+            onUpdateField={handleUpdateUserProduct}
           />
         </TabsContent>
         
@@ -466,6 +468,7 @@ export default function UserProductsPage() {
             renderProductName={renderProductName}
             renderStatusBadge={renderStatusBadge}
             renderEndpointName={renderEndpointName}
+            onUpdateField={handleUpdateUserProduct}
           />
         </TabsContent>
         
@@ -479,6 +482,7 @@ export default function UserProductsPage() {
             renderProductName={renderProductName}
             renderStatusBadge={renderStatusBadge}
             renderEndpointName={renderEndpointName}
+            onUpdateField={handleUpdateUserProduct}
           />
         </TabsContent>
       </Tabs>
@@ -731,23 +735,83 @@ function UserProductsList({
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <div>
               <CardTitle>{renderProductName(product.productId)}</CardTitle>
-              <CardDescription>
-                Username: {product.username || 'N/A'} | MSISDN: {product.msisdn || 'N/A'}
+              <CardDescription className="flex flex-col gap-2">
+                <div className="flex items-center">
+                  <span className="w-24 text-xs font-medium">Username:</span>
+                  {onUpdateField ? (
+                    <EditableField
+                      value={product.username || 'N/A'}
+                      onSave={(value) => onUpdateField(product.id, 'username', value)}
+                      placeholder="Enter username"
+                      validate={(value) => ({ isValid: true })}
+                    />
+                  ) : (
+                    <span>{product.username || 'N/A'}</span>
+                  )}
+                </div>
+                <div className="flex items-center">
+                  <span className="w-24 text-xs font-medium">MSISDN:</span>
+                  {onUpdateField ? (
+                    <EditableField
+                      value={product.msisdn || 'N/A'}
+                      onSave={(value) => onUpdateField(product.id, 'msisdn', value)}
+                      placeholder="Enter MSISDN"
+                      validate={(value) => ({ isValid: true })}
+                    />
+                  ) : (
+                    <span>{product.msisdn || 'N/A'}</span>
+                  )}
+                </div>
               </CardDescription>
             </div>
-            <div className="flex items-center space-x-2">
-              {renderStatusBadge(product.status)}
+            <div className="flex flex-col items-end space-y-2">
+              <div className="flex items-center space-x-2">
+                {onUpdateField ? (
+                  <EditableField
+                    value={product.status}
+                    onSave={(value) => onUpdateField(product.id, 'status', value)}
+                    type="select"
+                    options={[
+                      { value: 'active', label: 'Active' },
+                      { value: 'pending', label: 'Pending' },
+                      { value: 'suspended', label: 'Suspended' },
+                      { value: 'cancelled', label: 'Cancelled' }
+                    ]}
+                  />
+                ) : (
+                  renderStatusBadge(product.status)
+                )}
+              </div>
               <span className="text-xs text-muted-foreground">
                 Created {product.createdAt ? new Date(product.createdAt).toLocaleDateString() : 'N/A'}
               </span>
             </div>
           </CardHeader>
           <CardContent>
-            {product.comments && (
-              <div className="mb-4 p-3 bg-muted rounded-md">
-                <p className="text-sm text-muted-foreground">{product.comments}</p>
+            <div className="mb-4">
+              <div className="flex items-center mb-2">
+                <h4 className="font-medium">Comments</h4>
               </div>
-            )}
+              {onUpdateField ? (
+                <EditableField
+                  value={product.comments || ''}
+                  onSave={(value) => onUpdateField(product.id, 'comments', value)}
+                  type="textarea"
+                  placeholder="Add comments about this product assignment"
+                  className="w-full"
+                />
+              ) : (
+                product.comments ? (
+                  <div className="p-3 bg-muted rounded-md">
+                    <p className="text-sm text-muted-foreground">{product.comments}</p>
+                  </div>
+                ) : (
+                  <div className="p-3 border border-dashed rounded-md text-center">
+                    <p className="text-sm text-muted-foreground">No comments added</p>
+                  </div>
+                )
+              )}
+            </div>
 
             <div>
               <div className="flex justify-between items-center mb-2">
