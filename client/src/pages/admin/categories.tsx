@@ -102,8 +102,11 @@ export default function Categories() {
   const updateCategoryMutation = useMutation({
     mutationFn: async (data: CategoryFormValues & { id: number }) => {
       const { id, ...updateData } = data;
-      const response = await apiRequest('PATCH', `/api/product-categories/${id}`, updateData);
-      return response;
+      return apiRequest(`/api/product-categories/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updateData)
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/product-categories'] });
@@ -126,8 +129,9 @@ export default function Categories() {
   // Delete category mutation
   const deleteCategoryMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest('DELETE', `/api/product-categories/${id}`);
-      return response;
+      return apiRequest(`/api/product-categories/${id}`, {
+        method: 'DELETE'
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/product-categories'] });
