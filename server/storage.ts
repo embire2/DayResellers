@@ -319,7 +319,19 @@ export class MemStorage implements IStorage {
   async createProduct(product: InsertProduct): Promise<Product> {
     const id = this.productIdCounter++;
     const now = new Date();
-    const newProduct: Product = { ...product, id, createdAt: now };
+    // Ensure we're handling nulls properly for the Product type
+    const newProduct: Product = { 
+      id, 
+      name: product.name,
+      createdAt: now,
+      status: product.status ?? 'active',
+      description: product.description ?? null,
+      basePrice: product.basePrice,
+      group1Price: product.group1Price,
+      group2Price: product.group2Price,
+      categoryId: product.categoryId,
+      apiEndpoint: product.apiEndpoint ?? null
+    };
     this.products.set(id, newProduct);
     return newProduct;
   }
@@ -364,7 +376,15 @@ export class MemStorage implements IStorage {
   async createClient(client: InsertClient): Promise<Client> {
     const id = this.clientIdCounter++;
     const now = new Date();
-    const newClient: Client = { ...client, id, createdAt: now };
+    // Ensure we're handling nulls properly for the Client type
+    const newClient: Client = { 
+      id, 
+      name: client.name,
+      createdAt: now,
+      email: client.email ?? null,
+      phone: client.phone ?? null,
+      resellerId: client.resellerId
+    };
     this.clients.set(id, newClient);
     return newClient;
   }
@@ -386,10 +406,13 @@ export class MemStorage implements IStorage {
     const nextBillingDate = new Date();
     nextBillingDate.setMonth(nextBillingDate.getMonth() + 1);
     
+    // Ensure we're handling nulls properly for the ClientProduct type
     const newClientProduct: ClientProduct = { 
-      ...clientProduct, 
       id, 
       createdAt: now,
+      status: clientProduct.status ?? 'pending',
+      clientId: clientProduct.clientId,
+      productId: clientProduct.productId,
       lastBilledDate: now,
       nextBillingDate
     };
@@ -417,7 +440,15 @@ export class MemStorage implements IStorage {
   async createApiSetting(setting: InsertApiSetting): Promise<ApiSetting> {
     const id = this.apiSettingIdCounter++;
     const now = new Date();
-    const newSetting: ApiSetting = { ...setting, id, createdAt: now };
+    // Ensure we're handling nulls properly for the ApiSetting type
+    const newSetting: ApiSetting = { 
+      id, 
+      name: setting.name,
+      createdAt: now,
+      masterCategory: setting.masterCategory,
+      endpoint: setting.endpoint,
+      isEnabled: setting.isEnabled ?? true
+    };
     this.apiSettings.set(id, newSetting);
     return newSetting;
   }
@@ -445,7 +476,17 @@ export class MemStorage implements IStorage {
   async createTransaction(transaction: InsertTransaction): Promise<Transaction> {
     const id = this.transactionIdCounter++;
     const now = new Date();
-    const newTransaction: Transaction = { ...transaction, id, createdAt: now };
+    
+    // Ensure we're handling nulls properly for the Transaction type
+    const newTransaction: Transaction = { 
+      id,
+      userId: transaction.userId,
+      amount: transaction.amount,
+      description: transaction.description,
+      type: transaction.type,
+      createdAt: now
+    };
+    
     this.transactions.set(id, newTransaction);
     
     // Update user's credit balance if applicable
