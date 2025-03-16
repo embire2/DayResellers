@@ -94,7 +94,12 @@ export default function UserProductsPage() {
 
   const { data: userProducts = [], isLoading: userProductsLoading, refetch: refetchUserProducts } = useQuery({
     queryKey: ['/api/user-products', userId],
-    queryFn: () => getQueryFn<UserProductWithDetails[]>({ on401: "returnNull" })(`/api/user-products/${userId}`),
+    queryFn: async () => {
+      console.log(`Fetching user products for userId: ${userId}`);
+      const result = await getQueryFn<UserProductWithDetails[]>({ on401: "returnNull" })(`/api/user-products/${userId}`);
+      console.log('User products API response:', result);
+      return result;
+    },
     enabled: !!userId
   });
 
@@ -109,13 +114,19 @@ export default function UserProductsPage() {
         status: data.status,
         comments: data.comments || null
       };
-      return apiRequest('/api/user-products', {
+      console.log('Creating user product with payload:', payload);
+      
+      const response = await apiRequest('/api/user-products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
+      
+      console.log('User product creation response:', response);
+      return response;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('User product created successfully:', data);
       queryClient.invalidateQueries({ queryKey: ['/api/user-products', userId] });
       setIsAddDialogOpen(false);
       resetForm();
@@ -126,6 +137,7 @@ export default function UserProductsPage() {
       });
     },
     onError: (error: Error) => {
+      console.error('Error creating user product:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to assign product. Please try again.",
