@@ -107,20 +107,20 @@ export default function UserManagement() {
       });
       
       // Use the apiRequest function which already handles error checking and JSON parsing
-      return apiRequest("/api/users", {
+      return apiRequest<User>("/api/users", {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData)
       });
     },
-    onSuccess: (data) => {
-      console.log("User created successfully:", data.username);
+    onSuccess: (userData: User) => {
+      console.log("User created successfully:", userData.username);
       queryClient.invalidateQueries({ queryKey: ['/api/users'] });
       setIsAddModalOpen(false);
       form.reset();
       toast({
         title: "User created",
-        description: `New user "${data.username}" has been successfully created`,
+        description: `New user "${userData.username}" has been successfully created`,
       });
     },
     onError: (error: any) => {
@@ -141,7 +141,7 @@ export default function UserManagement() {
   // Update credit mutation
   const updateCreditMutation = useMutation({
     mutationFn: async (data: z.infer<typeof updateCreditSchema>) => {
-      return apiRequest(`/api/users/${data.userId}/credit`, {
+      return apiRequest<User>(`/api/users/${data.userId}/credit`, {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -177,20 +177,20 @@ export default function UserManagement() {
       // Only include password if it was changed (not empty)
       const payload = password ? { ...userData, password } : userData;
       
-      return apiRequest(`/api/users/${userId}`, {
+      return apiRequest<User>(`/api/users/${userId}`, {
         method: "PUT",
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
     },
-    onSuccess: (data) => {
+    onSuccess: (userData: User) => {
       queryClient.invalidateQueries({ queryKey: ['/api/users'] });
       setIsEditModalOpen(false);
       form.reset();
       setIsEditing(false);
       toast({
         title: "User updated",
-        description: `User "${data.username}" has been successfully updated`,
+        description: `User "${userData.username}" has been successfully updated`,
       });
     },
     onError: (error: any) => {
