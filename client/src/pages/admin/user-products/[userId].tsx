@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "wouter";
+import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { User, Product, UserProduct, ApiSetting, UserProductEndpoint } from "@shared/schema";
 import { apiRequest, getQueryFn } from "@/lib/queryClient";
@@ -35,6 +35,7 @@ interface UserProductWithDetails extends UserProduct {
 export default function UserProductsPage() {
   // Get userId from URL
   const params = useParams();
+  const [, setLocation] = useLocation();
   const userId = params.userId ? parseInt(params.userId) : null;
   
   // State
@@ -320,7 +321,7 @@ export default function UserProductsPage() {
         <div className="flex flex-col items-center justify-center p-10">
           <h1 className="text-2xl font-bold mb-4">User Not Found</h1>
           <p className="text-muted-foreground mb-6">The requested user could not be found.</p>
-          <Button variant="outline" onClick={() => window.location.href = '/admin/user-management'}>
+          <Button variant="outline" onClick={() => setLocation('/admin/users')}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to User Management
           </Button>
@@ -339,7 +340,7 @@ export default function UserProductsPage() {
         <div className="flex gap-2">
           <Button 
             variant="outline" 
-            onClick={() => window.location.href = '/admin/user-management'}
+            onClick={() => setLocation('/admin/users')}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back
