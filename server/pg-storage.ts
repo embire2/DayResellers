@@ -12,7 +12,8 @@ import {
   ClientProduct, ApiSetting, Transaction,
   InsertUser, InsertProductCategory, InsertProduct,
   InsertClient, InsertClientProduct, InsertApiSetting,
-  InsertTransaction
+  InsertTransaction, UserProduct, InsertUserProduct,
+  UserProductEndpoint, InsertUserProductEndpoint
 } from "../shared/schema";
 import { DashboardConfig } from "../shared/types";
 import { logger } from "./logger";
@@ -30,6 +31,114 @@ export class PgStorage implements IStorage {
       tableName: 'sessions',
       createTableIfMissing: true
     });
+  }
+  
+  // User Product operations
+  async createUserProduct(userProduct: InsertUserProduct): Promise<UserProduct> {
+    try {
+      const result = await db.insert(schema.userProducts).values(userProduct).returning();
+      return result[0];
+    } catch (error) {
+      logger.error("Failed to create user product", { error });
+      throw error;
+    }
+  }
+
+  async getUserProducts(): Promise<UserProduct[]> {
+    try {
+      return await db.select().from(schema.userProducts);
+    } catch (error) {
+      logger.error("Failed to get user products", { error });
+      throw error;
+    }
+  }
+
+  async getUserProductsByUser(userId: number): Promise<UserProduct[]> {
+    try {
+      return await db.select().from(schema.userProducts).where(eq(schema.userProducts.userId, userId));
+    } catch (error) {
+      logger.error("Failed to get user products by user", { error, userId });
+      throw error;
+    }
+  }
+
+  async getUserProduct(id: number): Promise<UserProduct | undefined> {
+    try {
+      const products = await db.select().from(schema.userProducts).where(eq(schema.userProducts.id, id));
+      return products.length > 0 ? products[0] : undefined;
+    } catch (error) {
+      logger.error("Failed to get user product", { error, id });
+      throw error;
+    }
+  }
+
+  async updateUserProduct(id: number, data: Partial<UserProduct>): Promise<UserProduct | undefined> {
+    try {
+      const updated = await db.update(schema.userProducts)
+        .set(data)
+        .where(eq(schema.userProducts.id, id))
+        .returning();
+      return updated.length > 0 ? updated[0] : undefined;
+    } catch (error) {
+      logger.error("Failed to update user product", { error, id });
+      throw error;
+    }
+  }
+
+  async deleteUserProduct(id: number): Promise<boolean> {
+    try {
+      const result = await db.delete(schema.userProducts)
+        .where(eq(schema.userProducts.id, id));
+      return true;
+    } catch (error) {
+      logger.error("Failed to delete user product", { error, id });
+      throw error;
+    }
+  }
+
+  // User Product Endpoint operations
+  async createUserProductEndpoint(endpoint: InsertUserProductEndpoint): Promise<UserProductEndpoint> {
+    try {
+      const result = await db.insert(schema.userProductEndpoints).values(endpoint).returning();
+      return result[0];
+    } catch (error) {
+      logger.error("Failed to create user product endpoint", { error });
+      throw error;
+    }
+  }
+
+  async getUserProductEndpoints(userProductId: number): Promise<UserProductEndpoint[]> {
+    try {
+      return await db.select().from(schema.userProductEndpoints)
+        .where(eq(schema.userProductEndpoints.userProductId, userProductId));
+    } catch (error) {
+      logger.error("Failed to get user product endpoints", { error, userProductId });
+      throw error;
+    }
+  }
+
+  async updateUserProductEndpoint(id: number, data: Partial<UserProductEndpoint>): Promise<UserProductEndpoint | undefined> {
+    try {
+      const updated = await db.update(schema.userProductEndpoints)
+        .set(data)
+        .where(eq(schema.userProductEndpoints.id, id))
+        .returning();
+      return updated.length > 0 ? updated[0] : undefined;
+    } catch (error) {
+      logger.error("Failed to update user product endpoint", { error, id });
+      throw error;
+    }
+  }
+
+  async deleteUserProductEndpoint(id: number): Promise<boolean> {
+    try {
+      await db.delete(schema.userProductEndpoints)
+        .where(eq(schema.userProductEndpoints.id, id));
+      return true;
+    } catch (error) {
+      logger.error("Failed to delete user product endpoint", { error, id });
+      throw error;
+    }
   }
 
   // User operations
