@@ -151,7 +151,16 @@ export default function ProductsPricing() {
   // Delete product mutation
   const deleteProductMutation = useMutation({
     mutationFn: async (id: number) => {
-      await apiRequest("DELETE", `/api/products/${id}`);
+      await fetch(`/api/products/${id}`, {
+        method: "DELETE",
+        credentials: "include"
+      }).then(async (res) => {
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(text || res.statusText);
+        }
+        return true;
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/products'] });
@@ -299,7 +308,12 @@ export default function ProductsPricing() {
                         <Textarea
                           placeholder="Enter product description"
                           className="resize-none"
-                          {...field}
+                          value={field.value || ""}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          disabled={field.disabled}
+                          name={field.name}
+                          ref={field.ref}
                         />
                       </FormControl>
                       <FormMessage />
@@ -443,7 +457,12 @@ export default function ProductsPricing() {
                       <FormControl>
                         <Input
                           placeholder="/api/packages/example"
-                          {...field}
+                          value={field.value || ""}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          disabled={field.disabled}
+                          name={field.name}
+                          ref={field.ref}
                         />
                       </FormControl>
                       <FormMessage />
