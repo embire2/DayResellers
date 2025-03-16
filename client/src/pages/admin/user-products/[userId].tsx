@@ -63,10 +63,10 @@ export default function UserProductsPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Queries
-  const { data: user, isLoading: userLoading } = useQuery({
-    queryKey: ['/api/users', userId],
-    queryFn: () => getQueryFn<User>({ on401: "returnNull" })(`/api/users/${userId}`),
+  // Queries - Fetch all users to get the current user details
+  const { data: allUsers, isLoading: usersLoading } = useQuery({
+    queryKey: ['/api/users'],
+    queryFn: getQueryFn<User[]>({ on401: "returnNull" }),
     enabled: !!userId,
     retry: 1,
     onError: (error) => {
@@ -75,9 +75,12 @@ export default function UserProductsPage() {
         description: "Failed to fetch user details. Please try again.",
         variant: "destructive"
       });
-      console.error("Error fetching user:", error);
+      console.error("Error fetching users:", error);
     }
   });
+  
+  // Extract the current user from the list
+  const user = allUsers?.find(u => u.id === userId);
 
   const { data: products = [], isLoading: productsLoading } = useQuery({
     queryKey: ['/api/products'],
@@ -312,7 +315,7 @@ export default function UserProductsPage() {
   };
 
   // Display a more comprehensive loading state
-  if (userLoading || productsLoading || apiSettingsLoading) {
+  if (usersLoading || productsLoading || apiSettingsLoading) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
