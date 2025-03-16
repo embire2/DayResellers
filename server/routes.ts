@@ -6,6 +6,7 @@ import { setupApiIntegration } from "./api-integration";
 import { calculateProRataPrice, getPriceByResellerGroup } from "../client/src/lib/utils";
 import { setupDiagnosticRoutes, recordDiagnosticError } from "./diagnostic-routes";
 import { logger } from "./logger";
+import userProductsRouter from "./api/user-products";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
@@ -662,6 +663,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch activities" });
     }
   });
+
+  // Register the User Products router
+  app.use('/api/user-products', userProductsRouter);
 
   const httpServer = createServer(app);
 

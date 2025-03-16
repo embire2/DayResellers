@@ -9,6 +9,14 @@ import { recordDiagnosticError } from "../diagnostic-routes";
 
 const router = Router();
 
+// Authentication middleware for all routes
+router.use((req: Request, res: Response, next: any) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
+  next();
+});
+
 // Get all user products for a user
 router.get("/:userId", async (req: Request, res: Response) => {
   try {
@@ -57,7 +65,9 @@ router.get("/product/:id", async (req: Request, res: Response) => {
     
     // Enhance endpoints with API setting details
     const enhancedEndpoints = await Promise.all(endpoints.map(async (endpoint) => {
-      const apiSetting = await storage.getApiSetting(endpoint.apiSettingId);
+      // Get all API settings and find the matching one
+      const apiSettings = await storage.getApiSettings();
+      const apiSetting = apiSettings.find(setting => setting.id === endpoint.apiSettingId);
       return {
         ...endpoint,
         apiSetting
