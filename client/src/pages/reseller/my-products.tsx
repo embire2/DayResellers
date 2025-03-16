@@ -1,0 +1,246 @@
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/use-auth";
+import { getQueryFn } from "@/lib/queryClient";
+import { UserProduct, Product } from "@shared/schema";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, RefreshCw, AlertTriangle, Info } from "lucide-react";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger 
+} from "@/components/ui/dialog";
+
+export default function MyProducts() {
+  const { user } = useAuth();
+  const [selectedProduct, setSelectedProduct] = useState<(UserProduct & { product: Product }) | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+
+  // Query for user products
+  const { data: userProducts = [], isLoading: userProductsLoading, refetch: refetchUserProducts } = useQuery({
+    queryKey: ['/api/user-products', user?.id],
+    queryFn: getQueryFn({
+      on401: "returnNull",
+    }),
+    enabled: !!user?.id
+  });
+
+  const renderStatusBadge = (status: string) => {
+    switch (status) {
+      case "active":
+        return <Badge className="bg-green-500">{status}</Badge>;
+      case "pending":
+        return <Badge className="bg-yellow-500">{status}</Badge>;
+      case "suspended":
+        return <Badge className="bg-orange-500">{status}</Badge>;
+      case "cancelled":
+        return <Badge className="bg-red-500">{status}</Badge>;
+      default:
+        return <Badge>{status}</Badge>;
+    }
+  };
+
+  const showProductDetails = (product: UserProduct & { product: Product }) => {
+    setSelectedProduct(product);
+    setDetailsOpen(true);
+  };
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p>Please log in to access this page.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto py-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">My Products</h1>
+        <Button
+          variant="outline"
+          onClick={() => refetchUserProducts()}
+        >
+          <RefreshCw className="mr-2 h-4 w-4" />
+          Refresh
+        </Button>
+      </div>
+
+      <Tabs defaultValue="all" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="all">All</TabsTrigger>
+          <TabsTrigger value="active">Active</TabsTrigger>
+          <TabsTrigger value="pending">Pending</TabsTrigger>
+          <TabsTrigger value="cancelled">Cancelled/Suspended</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="all">
+          {renderProductsTable(userProducts, userProductsLoading, showProductDetails)}
+        </TabsContent>
+        
+        <TabsContent value="active">
+          {renderProductsTable(
+            userProducts.filter((p: UserProduct) => p.status === 'active'),
+            userProductsLoading,
+            showProductDetails
+          )}
+        </TabsContent>
+        
+        <TabsContent value="pending">
+          {renderProductsTable(
+            userProducts.filter((p: UserProduct) => p.status === 'pending'),
+            userProductsLoading,
+            showProductDetails
+          )}
+        </TabsContent>
+        
+        <TabsContent value="cancelled">
+          {renderProductsTable(
+            userProducts.filter((p: UserProduct) => p.status === 'cancelled' || p.status === 'suspended'),
+            userProductsLoading,
+            showProductDetails
+          )}
+        </TabsContent>
+      </Tabs>
+
+      {/* Product Details Dialog */}
+      {selectedProduct && (
+        <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>{selectedProduct.product?.name}</DialogTitle>
+              <DialogDescription>
+                Product details and endpoints
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h3 className="text-sm font-medium">Status</h3>
+                  <p>{renderStatusBadge(selectedProduct.status)}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium">Username</h3>
+                  <p>{selectedProduct.username || 'N/A'}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium">MSISDN</h3>
+                  <p>{selectedProduct.msisdn || 'N/A'}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium">Created</h3>
+                  <p>{new Date(selectedProduct.createdAt).toLocaleDateString()}</p>
+                </div>
+              </div>
+
+              {selectedProduct.product && (
+                <div className="space-y-2 mt-4">
+                  <h3 className="text-sm font-medium">Product Details</h3>
+                  <div className="rounded-md bg-secondary p-3">
+                    <p><strong>Description:</strong> {selectedProduct.product.description}</p>
+                    <p><strong>Category:</strong> {selectedProduct.product.categoryId}</p>
+                    <p><strong>API Endpoint:</strong> {selectedProduct.product.apiEndpoint || 'N/A'}</p>
+                  </div>
+                </div>
+              )}
+
+              {selectedProduct.comments && (
+                <div className="space-y-2 mt-4">
+                  <h3 className="text-sm font-medium">Comments</h3>
+                  <div className="rounded-md bg-secondary p-3">
+                    <p>{selectedProduct.comments}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Endpoints section - Will display if the endpoint data is available */}
+              {selectedProduct.endpoints && selectedProduct.endpoints.length > 0 && (
+                <div className="space-y-2 mt-4">
+                  <h3 className="text-sm font-medium">Endpoints</h3>
+                  <div className="rounded-md bg-secondary p-3">
+                    <ul className="list-disc pl-5 space-y-1">
+                      {selectedProduct.endpoints.map((endpoint: any) => (
+                        <li key={endpoint.id}>
+                          {endpoint.apiSetting?.name || 'Unknown Endpoint'}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+    </div>
+  );
+}
+
+function renderProductsTable(
+  products: any[],
+  isLoading: boolean,
+  onViewDetails: (product: any) => void
+) {
+  if (isLoading) {
+    return (
+      <div className="flex justify-center p-10">
+        <Loader2 className="h-10 w-10 animate-spin" />
+      </div>
+    );
+  }
+
+  if (products.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center p-10">
+        <AlertTriangle className="h-12 w-12 text-yellow-500 mb-4" />
+        <p className="text-center text-muted-foreground">No products found in this category</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-md border mt-4">
+      <Table>
+        <TableCaption>Your product subscriptions</TableCaption>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Product</TableHead>
+            <TableHead>Username</TableHead>
+            <TableHead>MSISDN</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {products.map((product: any) => (
+            <TableRow key={product.id}>
+              <TableCell className="font-medium">{product.product?.name || 'Unknown'}</TableCell>
+              <TableCell>{product.username || 'N/A'}</TableCell>
+              <TableCell>{product.msisdn || 'N/A'}</TableCell>
+              <TableCell>
+                {renderStatusBadge(product.status)}
+              </TableCell>
+              <TableCell>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onViewDetails(product)}
+                >
+                  <Info className="h-4 w-4 mr-2" />
+                  Details
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}

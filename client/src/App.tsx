@@ -17,6 +17,7 @@ import ApiIntegration from "@/pages/admin/api-integration";
 import ApiTest from "@/pages/admin/api-test";
 import AdminSettings from "@/pages/admin/settings";
 import Diagnostics from "@/pages/admin/diagnostics";
+import ManageUserProducts from "@/pages/admin/manage-user-products";
 
 // Reseller Pages
 import ResellerDashboard from "@/pages/reseller/dashboard";
@@ -24,6 +25,7 @@ import Clients from "@/pages/reseller/clients";
 import Products from "@/pages/reseller/products";
 import Billing from "@/pages/reseller/billing";
 import Settings from "@/pages/reseller/settings";
+import MyProducts from "@/pages/reseller/my-products";
 
 import "./theme.css";
 
@@ -43,11 +45,13 @@ function Router() {
       <ProtectedRoute path="/admin/api-test" component={ApiTest} requiredRole="admin" />
       <ProtectedRoute path="/admin/settings" component={AdminSettings} requiredRole="admin" />
       <ProtectedRoute path="/admin/diagnostics" component={Diagnostics} requiredRole="admin" />
+      <ProtectedRoute path="/admin/user-products" component={ManageUserProducts} requiredRole="admin" />
 
       {/* Protected Reseller Routes */}
       <ProtectedRoute path="/reseller" component={ResellerDashboard} requiredRole="reseller" />
       <ProtectedRoute path="/reseller/clients" component={Clients} requiredRole="reseller" />
       <ProtectedRoute path="/reseller/products" component={Products} requiredRole="reseller" />
+      <ProtectedRoute path="/reseller/my-products" component={MyProducts} requiredRole="reseller" />
       <ProtectedRoute path="/reseller/billing" component={Billing} requiredRole="reseller" />
       <ProtectedRoute path="/reseller/settings" component={Settings} requiredRole="reseller" />
 
