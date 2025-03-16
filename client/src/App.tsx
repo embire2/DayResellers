@@ -18,6 +18,7 @@ import ApiTest from "@/pages/admin/api-test";
 import AdminSettings from "@/pages/admin/settings";
 import Diagnostics from "@/pages/admin/diagnostics";
 import ManageUserProducts from "@/pages/admin/manage-user-products";
+import UserProductsPage from "@/pages/admin/user-products/[userId]";
 
 // Reseller Pages
 import ResellerDashboard from "@/pages/reseller/dashboard";
@@ -46,6 +47,7 @@ function Router() {
       <ProtectedRoute path="/admin/settings" component={AdminSettings} requiredRole="admin" />
       <ProtectedRoute path="/admin/diagnostics" component={Diagnostics} requiredRole="admin" />
       <ProtectedRoute path="/admin/user-products" component={ManageUserProducts} requiredRole="admin" />
+      <ProtectedRoute path="/admin/user-products/:userId" component={UserProductsPage} requiredRole="admin" />
 
       {/* Protected Reseller Routes */}
       <ProtectedRoute path="/reseller" component={ResellerDashboard} requiredRole="reseller" />

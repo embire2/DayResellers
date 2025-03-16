@@ -17,7 +17,7 @@ router.use((req: Request, res: Response, next: any) => {
   next();
 });
 
-// Get all user products for a user
+// Get all user products for a user with products and endpoints details
 router.get("/:userId", async (req: Request, res: Response) => {
   try {
     const userId = parseInt(req.params.userId);
@@ -27,12 +27,29 @@ router.get("/:userId", async (req: Request, res: Response) => {
 
     const userProducts = await storage.getUserProductsByUser(userId);
     
-    // Enhance with product details
+    // Enhance with product details and endpoints
     const enhanced = await Promise.all(userProducts.map(async (userProduct) => {
+      // Get product details
       const product = await storage.getProduct(userProduct.productId);
+      
+      // Get endpoints for this user product
+      const endpoints = await storage.getUserProductEndpoints(userProduct.id);
+      
+      // Enhance endpoints with API setting details
+      const enhancedEndpoints = await Promise.all(endpoints.map(async (endpoint) => {
+        // Get all API settings and find the matching one
+        const apiSettings = await storage.getApiSettings();
+        const apiSetting = apiSettings.find(setting => setting.id === endpoint.apiSettingId);
+        return {
+          ...endpoint,
+          apiSetting
+        };
+      }));
+      
       return {
         ...userProduct,
-        product
+        product,
+        endpoints: enhancedEndpoints
       };
     }));
     
