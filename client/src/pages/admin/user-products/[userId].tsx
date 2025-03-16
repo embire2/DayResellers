@@ -318,6 +318,9 @@ export default function UserProductsPage() {
     );
   }
 
+  // Check if user exists
+  console.log("User fetch result:", user);
+  
   if (!user) {
     return (
       <div className="container mx-auto py-6">

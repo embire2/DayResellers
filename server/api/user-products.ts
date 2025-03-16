@@ -25,7 +25,23 @@ router.get("/:userId", async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Invalid user ID" });
     }
 
+    // First check if the user exists at all
+    const user = await storage.getUser(userId);
+    if (!user) {
+      logger.warn(`GET /user-products/:userId - User not found for ID ${userId}`);
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Log that we're fetching user products
+    logger.debug(`Fetching user products for user ID: ${userId}`);
+    
     const userProducts = await storage.getUserProductsByUser(userId);
+    
+    // If no products found, return empty array instead of error
+    if (!userProducts || userProducts.length === 0) {
+      logger.debug(`No user products found for user ID ${userId}, returning empty array`);
+      return res.json([]);
+    }
     
     // Enhance with product details and endpoints
     const enhanced = await Promise.all(userProducts.map(async (userProduct) => {
@@ -56,7 +72,11 @@ router.get("/:userId", async (req: Request, res: Response) => {
     res.json(enhanced);
   } catch (error) {
     recordDiagnosticError(req, error);
-    logger.error("Error fetching user products", { error });
+    logger.error("Error fetching user products", { 
+      error,
+      userId: parseInt(req.params.userId),
+      requestId: req.id.toString()
+    });
     res.status(500).json({ error: "Failed to fetch user products" });
   }
 });
