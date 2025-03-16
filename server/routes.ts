@@ -607,7 +607,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const currentYear = new Date().getFullYear();
       
       transactions.forEach(transaction => {
-        const transactionDate = new Date(transaction.createdAt);
+        const transactionDate = transaction.createdAt ? new Date(transaction.createdAt) : new Date();
         if (
           transactionDate.getMonth() === currentMonth && 
           transactionDate.getFullYear() === currentYear &&

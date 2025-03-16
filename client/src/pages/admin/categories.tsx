@@ -29,6 +29,11 @@ const categoryFormSchema = z.object({
 
 type CategoryFormValues = z.infer<typeof categoryFormSchema>;
 
+// Helper function to ensure boolean type for isActive
+const ensureBoolean = (value: boolean | null | undefined): boolean => {
+  return value === null || value === undefined ? true : value;
+};
+
 export default function Categories() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
