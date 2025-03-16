@@ -38,6 +38,9 @@ export default function UserProductsPage() {
   const [, setLocation] = useLocation();
   const userId = params.userId ? parseInt(params.userId) : null;
   
+  console.log("User-products page - params:", params);
+  console.log("User-products page - userId:", userId);
+  
   // State
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isAddEndpointDialogOpen, setIsAddEndpointDialogOpen] = useState(false);

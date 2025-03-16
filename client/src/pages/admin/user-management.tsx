@@ -446,7 +446,10 @@ export default function UserManagement() {
                           variant="ghost"
                           size="sm"
                           className="text-blue-600"
-                          onClick={() => setLocation(`/admin/user-products/${user.id}`)}
+                          onClick={() => {
+                            console.log("Manage button clicked for user:", user);
+                            setLocation(`/admin/user-products/${user.id}`);
+                          }}
                         >
                           <span className="flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
