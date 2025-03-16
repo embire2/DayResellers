@@ -16,7 +16,7 @@ export function Sidebar() {
         <div className="flex items-center h-16 flex-shrink-0 px-4 bg-primary">
           <div className="flex items-center">
             <img 
-              src="/attached_assets/Day Logo.png" 
+              src="/assets/Day%20Logo.png" 
               alt="Day Logo" 
               className="h-8 w-auto mr-2" 
             />
