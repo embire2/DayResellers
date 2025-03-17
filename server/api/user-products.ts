@@ -347,15 +347,36 @@ router.post("/:id/endpoints", async (req: Request, res: Response) => {
       return res.status(404).json({ error: "User product not found" });
     }
 
+    // Validate that endpointPath is provided
+    if (!req.body.endpointPath) {
+      return res.status(400).json({ error: "Endpoint path is required" });
+    }
+
     const endpointData = {
       ...req.body,
       userProductId
     };
 
+    // Log the endpoint data being processed
+    logger.debug(`POST /user-products/:id/endpoints - Processing endpoint data`, {
+      endpointData,
+      requestId: req.id
+    });
+
     const parsed = insertUserProductEndpointSchema.safeParse(endpointData);
     if (!parsed.success) {
+      logger.warn(`POST /user-products/:id/endpoints - Invalid schema validation`, {
+        validationErrors: parsed.error?.format() || "Unknown validation error",
+        requestBody: endpointData,
+        requestId: req.id,
+      });
       return res.status(400).json({ error: "Invalid endpoint data", details: parsed.error });
     }
+
+    logger.debug(`POST /user-products/:id/endpoints - Creating endpoint with data`, {
+      parsedData: parsed.data,
+      requestId: req.id
+    });
 
     const endpoint = await storage.createUserProductEndpoint(parsed.data);
     res.status(201).json(endpoint);

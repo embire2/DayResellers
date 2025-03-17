@@ -58,6 +58,7 @@ export default function UserProductsPage() {
   });
   const [endpointFormData, setEndpointFormData] = useState({
     apiSettingId: '',
+    endpointPath: '', // New field for the actual API endpoint path
     customParameters: ''
   });
   
@@ -191,12 +192,14 @@ export default function UserProductsPage() {
   });
 
   const addEndpointMutation = useMutation({
-    mutationFn: async (data: { userProductId: number, apiSettingId: number, customParameters?: string }) => {
+    mutationFn: async (data: { userProductId: number, apiSettingId: number, endpointPath: string, customParameters?: string }) => {
       const payload = {
         userProductId: data.userProductId,
         apiSettingId: data.apiSettingId,
+        endpointPath: data.endpointPath,
         customParameters: data.customParameters ? JSON.parse(data.customParameters) : null
       };
+      console.log('Adding endpoint with payload:', payload);
       const response = await apiRequest('POST', `/api/user-products/${data.userProductId}/endpoints`, payload);
       try {
         return await response.json();
@@ -211,6 +214,7 @@ export default function UserProductsPage() {
       setIsAddEndpointDialogOpen(false);
       setEndpointFormData({
         apiSettingId: '',
+        endpointPath: '',
         customParameters: ''
       });
       toast({
@@ -340,11 +344,18 @@ export default function UserProductsPage() {
   };
 
   const handleAddEndpoint = () => {
-    if (selectedProduct && endpointFormData.apiSettingId) {
+    if (selectedProduct && endpointFormData.apiSettingId && endpointFormData.endpointPath) {
       addEndpointMutation.mutate({
         userProductId: selectedProduct.id,
         apiSettingId: parseInt(endpointFormData.apiSettingId),
+        endpointPath: endpointFormData.endpointPath,
         customParameters: endpointFormData.customParameters || undefined
+      });
+    } else {
+      toast({
+        title: "Validation Error",
+        description: "API endpoint and endpoint path are required.",
+        variant: "destructive",
       });
     }
   };

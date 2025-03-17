@@ -93,6 +93,7 @@ export const userProductEndpoints = pgTable("user_product_endpoints", {
   id: serial("id").primaryKey(),
   userProductId: integer("user_product_id").notNull(),
   apiSettingId: integer("api_setting_id").notNull(),
+  endpointPath: text("endpoint_path").notNull(), // Path like /rest/lte/usernameInfo.php
   customParameters: jsonb("custom_parameters"),
   createdAt: timestamp("created_at").defaultNow()
 });
