@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { getQueryFn } from "@/lib/queryClient";
@@ -35,13 +35,31 @@ export default function MyProducts() {
   const [detailsOpen, setDetailsOpen] = useState(false);
 
   // Query for user products
-  const { data: userProducts = [], isLoading: userProductsLoading, refetch: refetchUserProducts } = useQuery({
-    queryKey: ['/api/user-products', user?.id],
+  const { data: userProducts = [], isLoading: userProductsLoading, error: userProductsError, refetch: refetchUserProducts } = useQuery<UserProductWithProduct[]>({
+    queryKey: [`/api/user-products/${user?.id}`],
     queryFn: getQueryFn<UserProductWithProduct[]>({
       on401: "returnNull",
     }),
     enabled: !!user?.id
   });
+  
+  // Log product data on each render for debugging
+  React.useEffect(() => {
+    if (userProducts && userProducts.length > 0) {
+      console.log("Products available:", { 
+        userId: user?.id,
+        productCount: userProducts.length,
+        products: userProducts 
+      });
+    }
+    
+    if (userProductsError) {
+      console.error("Error fetching products:", { 
+        userId: user?.id, 
+        error: userProductsError 
+      });
+    }
+  }, [userProducts, userProductsError, user?.id]);
 
   // Status rendering is handled within each component where needed
 

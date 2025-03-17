@@ -17,6 +17,7 @@ export async function apiRequest<T = Response>(
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
+      "Accept": "application/json"
     },
   };
   
@@ -24,9 +25,30 @@ export async function apiRequest<T = Response>(
     options.body = JSON.stringify(body);
   }
   
-  const res = await fetch(url, options);
-  await throwIfResNotOk(res);
-  return res;
+  console.log(`API Request: ${method} ${url}`, {
+    method,
+    url,
+    hasBody: !!body && (method === 'POST' || method === 'PUT' || method === 'PATCH')
+  });
+  
+  try {
+    const res = await fetch(url, options);
+    console.log(`API Response: ${method} ${url}`, {
+      status: res.status,
+      statusText: res.statusText,
+      ok: res.ok
+    });
+    
+    await throwIfResNotOk(res);
+    return res;
+  } catch (error) {
+    console.error(`API Error: ${method} ${url}`, {
+      error,
+      method,
+      url
+    });
+    throw error;
+  }
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
@@ -35,16 +57,34 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey[0] as string, {
-      credentials: "include",
-    });
+    // Get the URL from the query key
+    const url = queryKey[0] as string;
+    
+    console.log(`Fetching data from: ${url}`);
+    
+    try {
+      const res = await fetch(url, {
+        credentials: "include", // This is important for sending cookies/session
+        headers: {
+          "Accept": "application/json"
+        }
+      });
+      
+      console.log(`Fetch result: status=${res.status}, statusText=${res.statusText}`);
 
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      return null;
+      if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+        console.warn(`Authentication error (401) from ${url}`);
+        return null;
+      }
+
+      await throwIfResNotOk(res);
+      const data = await res.json();
+      console.log(`Successfully fetched data from ${url}`);
+      return data;
+    } catch (error) {
+      console.error(`Error fetching from ${url}:`, error);
+      throw error;
     }
-
-    await throwIfResNotOk(res);
-    return await res.json();
   };
 
 export const queryClient = new QueryClient({
