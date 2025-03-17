@@ -82,13 +82,19 @@ export function ClientTable({ clients }: ClientTableProps) {
             <TableRow key={client.id}>
               <TableCell className="font-medium">{client.name}</TableCell>
               <TableCell>
-                <div className="text-sm text-neutral-dark">{client.products.summary}</div>
-                {client.products.details && (
-                  <div className="text-xs text-neutral">{client.products.details}</div>
+                {client.products ? (
+                  <>
+                    <div className="text-sm text-neutral-dark">{client.products.summary}</div>
+                    {client.products.details && (
+                      <div className="text-xs text-neutral">{client.products.details}</div>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-sm text-neutral-dark">No products</div>
                 )}
               </TableCell>
-              <TableCell>{formatDate(client.lastBilledDate)}</TableCell>
-              <TableCell>{renderStatus(client.status)}</TableCell>
+              <TableCell>{client.lastBilledDate ? formatDate(client.lastBilledDate) : "Not billed yet"}</TableCell>
+              <TableCell>{client.status ? renderStatus(client.status) : "Unknown"}</TableCell>
               <TableCell className="text-right">
                 <Link href={`/reseller/clients/${client.id}`}>
                   <Button variant="ghost" size="sm" className="text-primary hover:text-primary-dark">
