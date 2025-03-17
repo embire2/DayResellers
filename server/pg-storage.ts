@@ -89,11 +89,11 @@ export class PgStorage implements IStorage {
         timestamp: new Date().toISOString()
       });
       
-      // Skip ORM approach and always use direct SQL query with transformation
-      // since we know there's a mismatch between column names in DB and our schema
-      logger.debug("PgStorage.getUserProductsByUser - Using direct SQL query", {
+      // CRITICAL DEBUG - Log query information
+      logger.warn("CRITICAL DEBUG - getUserProductsByUser executing query", {
         userId,
-        timestamp: new Date().toISOString()
+        queryText: 'SELECT * FROM user_products WHERE user_id = $1',
+        parameters: [userId]
       });
       
       // Direct query to get data from PostgreSQL
@@ -101,6 +101,13 @@ export class PgStorage implements IStorage {
         'SELECT * FROM user_products WHERE user_id = $1',
         [userId]
       );
+      
+      // CRITICAL DEBUG - Log raw database results
+      logger.warn("CRITICAL DEBUG - getUserProductsByUser raw DB results", {
+        userId,
+        rowCount: rows.length,
+        rawRows: JSON.stringify(rows)
+      });
       
       // Transform the results to match the expected schema format - camelCase to snake_case mapping
       const transformedProducts = rows.map(row => ({
@@ -114,14 +121,14 @@ export class PgStorage implements IStorage {
         createdAt: row.created_at
       }));
       
-      // VERBOSE: Log the result of direct query
-      logger.debug("PgStorage.getUserProductsByUser - Direct SQL retrieval completed", {
+      // CRITICAL DEBUG - Log transformed results in detail
+      logger.warn("CRITICAL DEBUG - getUserProductsByUser transformed results", {
         userId,
-        productsFound: transformedProducts.length,
-        products: transformedProducts,
-        timestamp: new Date().toISOString()
+        transformedCount: transformedProducts.length,
+        transformedProducts: JSON.stringify(transformedProducts)
       });
       
+      // Return the transformed products
       return transformedProducts;
     } catch (error: any) {
       // VERBOSE: Enhanced error logging

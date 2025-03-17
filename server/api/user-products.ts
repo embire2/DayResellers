@@ -67,6 +67,142 @@ router.get("/:userId", async (req: Request, res: Response) => {
       requestId: req.id,
     });
     
+    // DIRECT DATABASE DEBUG APPROACH
+    logger.warn(`CRITICAL DEBUG - Before storage call, attempting direct DB query`, {
+      userId,
+      requestId: req.id
+    });
+    
+    // Try direct database query using the pool
+    try {
+      const pool = require('../db').pool;
+      const directResult = await pool.query(
+        'SELECT * FROM user_products WHERE user_id = $1',
+        [userId]
+      );
+      
+      logger.warn(`CRITICAL DEBUG - Direct DB query result`, {
+        userId,
+        rowCount: directResult.rows.length,
+        rawRows: JSON.stringify(directResult.rows),
+        requestId: req.id
+      });
+      
+      // Transform the direct query results
+      if (directResult.rows.length > 0) {
+        const transformedProducts = directResult.rows.map(row => ({
+          id: row.id,
+          userId: row.user_id,
+          productId: row.product_id,
+          username: row.username,
+          msisdn: row.msisdn,
+          comments: row.comments,
+          status: row.status,
+          createdAt: row.created_at
+        }));
+        
+        logger.warn(`CRITICAL DEBUG - Direct query transformed products`, {
+          transformedCount: transformedProducts.length,
+          transformedProducts: JSON.stringify(transformedProducts),
+          requestId: req.id
+        });
+        
+        // Use these directly instead of calling storage
+        const userProducts = transformedProducts;
+        let callDuration = 0;  // Skip timing since we're using direct query
+        
+        // VERBOSE: Log the storage layer response with our direct results
+        logger.debug(`GET /user-products/:userId - Using direct DB results`, {
+          userId: userId,
+          callDuration: `${callDuration}ms`,
+          productsFound: userProducts ? userProducts.length : 0,
+          userProductsRaw: userProducts,
+          requestId: req.id,
+        });
+        
+        // CRITICAL DEBUG - Log the products found
+        logger.warn(`CRITICAL DEBUG - User products query for user ${userId}:`, {
+          userProducts: JSON.stringify(userProducts),
+          requestId: req.id
+        });
+        
+        // If no products found, return empty array instead of error
+        if (!userProducts || userProducts.length === 0) {
+          logger.debug(`GET /user-products/:userId - No user products found for user ID ${userId}, returning empty array`, {
+            requestId: req.id,
+          });
+          return res.json([]);
+        }
+        
+        // VERBOSE: Log the enhancement process
+        logger.debug(`GET /user-products/:userId - Enhancing ${userProducts.length} products with details and endpoints`, {
+          requestId: req.id,
+        });
+        
+        // Enhance with product details and endpoints
+        const enhanced = await Promise.all(userProducts.map(async (userProduct) => {
+          // Get product details
+          const product = await storage.getProduct(userProduct.productId);
+          
+          // VERBOSE: Log product fetch
+          logger.debug(`GET /user-products/:userId - Product details for userProduct #${userProduct.id}`, {
+            userProductId: userProduct.id,
+            productId: userProduct.productId,
+            productExists: !!product,
+            requestId: req.id,
+          });
+          
+          // Get endpoints for this user product
+          const endpoints = await storage.getUserProductEndpoints(userProduct.id);
+          
+          // VERBOSE: Log endpoints fetch
+          logger.debug(`GET /user-products/:userId - Endpoints for userProduct #${userProduct.id}`, {
+            userProductId: userProduct.id,
+            endpointsCount: endpoints.length,
+            requestId: req.id,
+          });
+          
+          // Enhance endpoints with API setting details
+          const enhancedEndpoints = await Promise.all(endpoints.map(async (endpoint) => {
+            // Get all API settings and find the matching one
+            const apiSettings = await storage.getApiSettings();
+            const apiSetting = apiSettings.find(setting => setting.id === endpoint.apiSettingId);
+            return {
+              ...endpoint,
+              apiSetting
+            };
+          }));
+          
+          return {
+            ...userProduct,
+            product,
+            endpoints: enhancedEndpoints
+          };
+        }));
+        
+        // VERBOSE: Log response
+        logger.debug(`GET /user-products/:userId - Successfully enhanced products, returning response`, {
+          userId: userId,
+          enhancedProductsCount: enhanced.length,
+          requestId: req.id,
+        });
+        
+        return res.json(enhanced);
+      }
+    } catch (directErr) {
+      logger.error(`CRITICAL DEBUG - Error in direct DB query`, {
+        error: directErr,
+        userId,
+        requestId: req.id
+      });
+    }
+    
+    // If direct query failed or returned no results, fall back to storage method
+    logger.warn(`CRITICAL DEBUG - Falling back to storage method`, {
+      userId,
+      requestId: req.id
+    });
+    
     // VERBOSE: Log the storage layer call
     let callStartTime = Date.now();
     const userProducts = await storage.getUserProductsByUser(userId);
