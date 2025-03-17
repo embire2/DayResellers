@@ -62,11 +62,8 @@ export default function ManageUserProducts() {
         status: data.status,
         comments: data.comments || null
       };
-      return apiRequest('/api/user-products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      console.log("Creating user product with payload:", payload);
+      return apiRequest('POST', '/api/user-products', payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/user-products'] });
@@ -95,11 +92,7 @@ export default function ManageUserProducts() {
         status: data.status,
         comments: data.comments || null
       };
-      return apiRequest(`/api/user-products/${data.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      return apiRequest('PATCH', `/api/user-products/${data.id}`, payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/user-products'] });
@@ -122,9 +115,7 @@ export default function ManageUserProducts() {
 
   const deleteUserProductMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest(`/api/user-products/${id}`, {
-        method: 'DELETE'
-      });
+      return apiRequest('DELETE', `/api/user-products/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/user-products'] });

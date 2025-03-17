@@ -117,11 +117,7 @@ export default function UserProductsPage() {
       };
       console.log('Creating user product with payload:', payload);
       
-      const response = await apiRequest('/api/user-products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      const response = await apiRequest('POST', '/api/user-products', payload);
       
       console.log('User product creation response:', response);
       return response;
@@ -149,9 +145,7 @@ export default function UserProductsPage() {
 
   const deleteUserProductMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest(`/api/user-products/${id}`, {
-        method: 'DELETE'
-      });
+      return apiRequest('DELETE', `/api/user-products/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/user-products', userId] });
@@ -178,11 +172,7 @@ export default function UserProductsPage() {
         apiSettingId: data.apiSettingId,
         customParameters: data.customParameters ? JSON.parse(data.customParameters) : null
       };
-      return apiRequest('/api/user-products/' + data.userProductId + '/endpoints', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      return apiRequest('POST', `/api/user-products/${data.userProductId}/endpoints`, payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/user-products', userId] });
@@ -208,9 +198,7 @@ export default function UserProductsPage() {
 
   const deleteEndpointMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest(`/api/user-products/endpoints/${id}`, {
-        method: 'DELETE'
-      });
+      return apiRequest('DELETE', `/api/user-products/endpoints/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/user-products', userId] });
