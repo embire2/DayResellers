@@ -168,6 +168,17 @@ export class PgStorage implements IStorage {
       throw error;
     }
   }
+  
+  async getUserProductEndpoint(id: number): Promise<UserProductEndpoint | undefined> {
+    try {
+      const result = await db.select().from(schema.userProductEndpoints)
+        .where(eq(schema.userProductEndpoints.id, id));
+      return result.length > 0 ? result[0] : undefined;
+    } catch (error) {
+      logger.error("Failed to get user product endpoint by ID", { error, id });
+      throw error;
+    }
+  }
 
   async updateUserProductEndpoint(id: number, data: Partial<UserProductEndpoint>): Promise<UserProductEndpoint | undefined> {
     try {

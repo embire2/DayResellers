@@ -6,6 +6,7 @@ import { storage } from "../storage";
 import axios from "axios";
 import { logger } from "../logger";
 import { recordDiagnosticError } from "../diagnostic-routes";
+import { ApiSetting, UserProductEndpoint } from "../../shared/schema";
 
 const router = Router();
 
@@ -29,7 +30,8 @@ router.post("/:endpointId", async (req: Request, res: Response) => {
     }
 
     // Get the endpoint details
-    const endpoint = await storage.getUserProductEndpoint(endpointId);
+    const endpoints = await storage.getUserProductEndpoints(endpointId);
+    const endpoint = endpoints.find(e => e.id === endpointId);
     if (!endpoint) {
       return res.status(404).json({ error: "Endpoint not found" });
     }
@@ -41,12 +43,13 @@ router.post("/:endpointId", async (req: Request, res: Response) => {
     }
 
     // Verify the user has permission (either owner or admin)
-    if (req.user.id !== userProduct.userId && req.user.role !== "admin") {
+    if (!req.user || (req.user.id !== userProduct.userId && req.user.role !== "admin")) {
       return res.status(403).json({ error: "Not authorized to access this endpoint" });
     }
 
     // Get the API setting
-    const apiSetting = await storage.getApiSetting(endpoint.apiSettingId);
+    const apiSettings = await storage.getApiSettings();
+    const apiSetting = apiSettings.find(setting => setting.id === endpoint.apiSettingId);
     if (!apiSetting) {
       return res.status(404).json({ error: "API setting not found" });
     }
@@ -59,7 +62,7 @@ router.post("/:endpointId", async (req: Request, res: Response) => {
     const apiUrl = `${apiSetting.endpoint}${endpoint.endpointPath}`;
     logger.info(`Running external API endpoint: ${apiUrl}`, {
       endpointId,
-      userId: req.user.id,
+      userId: req.user?.id,
       apiUrl,
       requestId: req.id
     });
@@ -80,25 +83,25 @@ router.post("/:endpointId", async (req: Request, res: Response) => {
         data: response.data,
         status: response.status
       });
-    } catch (error) {
+    } catch (apiError: any) {
       logger.error(`Error calling external API endpoint: ${apiUrl}`, {
-        error,
+        error: apiError,
         endpointId,
-        userId: req.user.id,
+        userId: req.user?.id,
         requestId: req.id
       });
 
       // Provide structured error information
-      if (error.response) {
+      if (apiError.response) {
         // The request was made and the server responded with a status code
         // that falls out of the range of 2xx
-        return res.status(error.response.status).json({
+        return res.status(apiError.response.status).json({
           success: false,
           error: "External API error",
-          status: error.response.status,
-          data: error.response.data
+          status: apiError.response.status,
+          data: apiError.response.data
         });
-      } else if (error.request) {
+      } else if (apiError.request) {
         // The request was made but no response was received
         return res.status(504).json({
           success: false,
@@ -110,11 +113,11 @@ router.post("/:endpointId", async (req: Request, res: Response) => {
         return res.status(500).json({
           success: false,
           error: "API request setup error",
-          message: error.message
+          message: apiError.message
         });
       }
     }
-  } catch (error) {
+  } catch (error: any) {
     // Log any uncaught errors
     recordDiagnosticError(req, error);
     logger.error("Error running endpoint", { error });

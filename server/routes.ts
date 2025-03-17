@@ -732,6 +732,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Register the User Products router
   app.use('/api/user-products', userProductsRouter);
+  app.use('/api/run-endpoint', runEndpointRouter);
 
   const httpServer = createServer(app);
 
