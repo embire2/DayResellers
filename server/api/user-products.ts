@@ -57,6 +57,11 @@ router.get("/:userId", async (req: Request, res: Response) => {
       requestId: req.id,
     });
     
+    // VERBOSE: Additional debugging for user ID verification
+    logger.info(`GET /user-products/:userId - Verified user ID ${userId} exists with username ${user?.username}`, {
+      requestId: req.id
+    });
+    
     if (!user) {
       logger.warn(`GET /user-products/:userId - User not found for ID ${userId}`);
       return res.status(404).json({ error: "User not found" });

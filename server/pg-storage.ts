@@ -102,10 +102,11 @@ export class PgStorage implements IStorage {
         [userId]
       );
       
-      // Log raw database results at debug level
-      logger.debug("PgStorage.getUserProductsByUser - Raw DB results", {
+      // Log raw database results at debug level for troubleshooting
+      logger.warn("PgStorage.getUserProductsByUser - Raw DB results", {
         userId,
-        rowCount: rows.length
+        rowCount: rows.length,
+        rowData: JSON.stringify(rows)
       });
       
       // Transform the results to match the expected schema format - snake_case to camelCase mapping
@@ -121,9 +122,10 @@ export class PgStorage implements IStorage {
       }));
       
       // Log transformed results at debug level
-      logger.debug("PgStorage.getUserProductsByUser - Transformed results", {
+      logger.warn("PgStorage.getUserProductsByUser - Transformed results", {
         userId,
-        transformedCount: transformedProducts.length
+        transformedCount: transformedProducts.length,
+        transformedData: JSON.stringify(transformedProducts)
       });
       
       // Return the transformed products
