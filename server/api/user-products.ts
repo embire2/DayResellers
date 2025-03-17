@@ -22,34 +22,92 @@ router.get("/:userId", async (req: Request, res: Response) => {
   try {
     const userId = parseInt(req.params.userId);
     if (isNaN(userId)) {
+      logger.warn(`GET /user-products/:userId - Invalid user ID format: ${req.params.userId}`);
       return res.status(400).json({ error: "Invalid user ID" });
     }
 
+    // VERBOSE: Log the request details
+    logger.info(`GET /user-products/:userId - Received request to fetch user products`, {
+      userId: userId,
+      requestId: req.id,
+      requestedBy: req.user?.id,
+      url: req.originalUrl,
+    });
+
     // First check if the user exists at all
     const user = await storage.getUser(userId);
+    
+    // VERBOSE: Log user existence check
+    logger.debug(`GET /user-products/:userId - User existence check`, {
+      userId: userId,
+      userExists: !!user,
+      userDetails: user ? {
+        username: user.username,
+        role: user.role,
+        paymentMode: user.paymentMode
+      } : null,
+      requestId: req.id,
+    });
+    
     if (!user) {
       logger.warn(`GET /user-products/:userId - User not found for ID ${userId}`);
       return res.status(404).json({ error: "User not found" });
     }
 
     // Log that we're fetching user products
-    logger.debug(`Fetching user products for user ID: ${userId}`);
+    logger.debug(`GET /user-products/:userId - Fetching user products from storage for user ID: ${userId}`, {
+      requestId: req.id,
+    });
     
+    // VERBOSE: Log the storage layer call
+    let callStartTime = Date.now();
     const userProducts = await storage.getUserProductsByUser(userId);
+    let callDuration = Date.now() - callStartTime;
+    
+    // VERBOSE: Log the storage layer response
+    logger.debug(`GET /user-products/:userId - Storage response`, {
+      userId: userId,
+      callDuration: `${callDuration}ms`,
+      productsFound: userProducts ? userProducts.length : 0,
+      userProductsRaw: userProducts,
+      requestId: req.id,
+    });
     
     // If no products found, return empty array instead of error
     if (!userProducts || userProducts.length === 0) {
-      logger.debug(`No user products found for user ID ${userId}, returning empty array`);
+      logger.debug(`GET /user-products/:userId - No user products found for user ID ${userId}, returning empty array`, {
+        requestId: req.id,
+      });
       return res.json([]);
     }
+    
+    // VERBOSE: Log the enhancement process
+    logger.debug(`GET /user-products/:userId - Enhancing ${userProducts.length} products with details and endpoints`, {
+      requestId: req.id,
+    });
     
     // Enhance with product details and endpoints
     const enhanced = await Promise.all(userProducts.map(async (userProduct) => {
       // Get product details
       const product = await storage.getProduct(userProduct.productId);
       
+      // VERBOSE: Log product fetch
+      logger.debug(`GET /user-products/:userId - Product details for userProduct #${userProduct.id}`, {
+        userProductId: userProduct.id,
+        productId: userProduct.productId,
+        productExists: !!product,
+        requestId: req.id,
+      });
+      
       // Get endpoints for this user product
       const endpoints = await storage.getUserProductEndpoints(userProduct.id);
+      
+      // VERBOSE: Log endpoints fetch
+      logger.debug(`GET /user-products/:userId - Endpoints for userProduct #${userProduct.id}`, {
+        userProductId: userProduct.id,
+        endpointsCount: endpoints.length,
+        requestId: req.id,
+      });
       
       // Enhance endpoints with API setting details
       const enhancedEndpoints = await Promise.all(endpoints.map(async (endpoint) => {
@@ -69,15 +127,26 @@ router.get("/:userId", async (req: Request, res: Response) => {
       };
     }));
     
+    // VERBOSE: Log response
+    logger.debug(`GET /user-products/:userId - Successfully enhanced products, returning response`, {
+      userId: userId,
+      enhancedProductsCount: enhanced.length,
+      requestId: req.id,
+    });
+    
     res.json(enhanced);
-  } catch (error) {
-    recordDiagnosticError(req, error);
-    logger.error("Error fetching user products", { 
+  } catch (error: any) {
+    // VERBOSE: Enhanced error logging
+    logger.error(`GET /user-products/:userId - Critical error fetching user products`, { 
       error,
+      errorMessage: error.message || "Unknown error",
+      errorStack: error.stack || "No stack trace",
       userId: parseInt(req.params.userId),
       requestId: req.id.toString()
     });
-    res.status(500).json({ error: "Failed to fetch user products" });
+    
+    recordDiagnosticError(req, error);
+    res.status(500).json({ error: "Failed to fetch user products", details: error.message || "Unknown error" });
   }
 });
 
@@ -126,14 +195,32 @@ router.get("/product/:id", async (req: Request, res: Response) => {
 // Create a new user product
 router.post("/", async (req: Request, res: Response) => {
   try {
+    // VERBOSE: Log the incoming request
+    logger.info(`POST /user-products - Received request to create user product`, {
+      requestBody: req.body,
+      requestId: req.id,
+      userId: req.user?.id,
+    });
+
     const parsed = insertUserProductSchema.safeParse(req.body);
     if (!parsed.success) {
+      logger.warn(`POST /user-products - Invalid schema validation`, {
+        validationErrors: parsed.error?.format() || "Unknown validation error",
+        requestBody: req.body,
+        requestId: req.id,
+      });
       return res.status(400).json({ error: "Invalid user product data", details: parsed.error });
     }
 
     // Verify that the user exists before creating the product
     const userId = parsed.data.userId;
     const user = await storage.getUser(userId);
+    
+    logger.debug(`POST /user-products - Checking user existence`, {
+      userId,
+      userExists: !!user,
+      requestId: req.id,
+    });
     
     if (!user) {
       logger.warn(`POST /user-products - Attempt to create product for non-existent user ID ${userId}`);
@@ -144,30 +231,63 @@ router.post("/", async (req: Request, res: Response) => {
     const productId = parsed.data.productId;
     const product = await storage.getProduct(productId);
     
+    logger.debug(`POST /user-products - Checking product existence`, {
+      productId,
+      productExists: !!product,
+      requestId: req.id,
+    });
+    
     if (!product) {
       logger.warn(`POST /user-products - Attempt to add non-existent product ID ${productId} to user ${userId}`);
       return res.status(404).json({ error: "Product not found" });
     }
+
+    // VERBOSE: Check user payment mode and credit balance 
+    logger.debug(`POST /user-products - User payment info`, {
+      userId,
+      paymentMode: user.paymentMode,
+      creditBalance: user.creditBalance,
+      productPrice: product.basePrice,
+      requestId: req.id,
+    });
     
-    logger.debug(`Creating user product for user ID ${userId} with product ID ${productId}`);
+    // VERBOSE: Log exactly what data is being passed to storage
+    logger.debug(`POST /user-products - Attempting to create user product with data:`, {
+      userProductData: parsed.data,
+      requestId: req.id,
+    });
+    
     const userProduct = await storage.createUserProduct(parsed.data);
     
+    // VERBOSE: Log response from storage layer
+    logger.debug(`POST /user-products - Response from storage layer:`, {
+      userProductCreated: !!userProduct,
+      userProduct: userProduct,
+      requestId: req.id,
+    });
+    
     // Log successful creation
-    logger.info(`User product created successfully`, {
+    logger.info(`POST /user-products - User product created successfully`, {
       userProductId: userProduct.id,
       userId: userProduct.userId,
       productId: userProduct.productId,
-      status: userProduct.status
+      status: userProduct.status,
+      requestId: req.id,
     });
     
     res.status(201).json(userProduct);
-  } catch (error) {
-    recordDiagnosticError(req, error, req.body);
-    logger.error("Error creating user product", { 
+  } catch (error: any) {
+    // VERBOSE: Enhanced error logging
+    logger.error(`POST /user-products - Critical error during user product creation`, { 
       error,
-      requestBody: { ...req.body, password: req.body.password ? "[REDACTED]" : undefined }
+      errorMessage: error.message || "Unknown error",
+      errorStack: error.stack || "No stack trace",
+      requestBody: { ...req.body, password: req.body.password ? "[REDACTED]" : undefined },
+      requestId: req.id,
     });
-    res.status(500).json({ error: "Failed to create user product" });
+    
+    recordDiagnosticError(req, error, req.body);
+    res.status(500).json({ error: "Failed to create user product", details: error.message || "Unknown error" });
   }
 });
 

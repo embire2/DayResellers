@@ -36,10 +36,38 @@ export class PgStorage implements IStorage {
   // User Product operations
   async createUserProduct(userProduct: InsertUserProduct): Promise<UserProduct> {
     try {
+      // VERBOSE: Log detailed info about the operation
+      logger.debug("PgStorage.createUserProduct - Beginning creation", {
+        userProductData: userProduct,
+        timestamp: new Date().toISOString()
+      });
+      
       const result = await db.insert(schema.userProducts).values(userProduct).returning();
+      
+      // VERBOSE: Log the result of the operation
+      logger.debug("PgStorage.createUserProduct - Operation completed", {
+        success: result.length > 0,
+        resultCount: result.length,
+        createdProduct: result.length > 0 ? result[0] : null,
+        timestamp: new Date().toISOString()
+      });
+      
+      if (!result || result.length === 0) {
+        throw new Error("User product was not created - database returned empty result");
+      }
+      
       return result[0];
-    } catch (error) {
-      logger.error("Failed to create user product", { error });
+    } catch (error: any) {
+      // VERBOSE: Enhanced error logging
+      logger.error("PgStorage.createUserProduct - Failed to create user product", { 
+        error,
+        errorMessage: error.message || "Unknown error",
+        errorCode: error.code,
+        errorDetail: error.detail,
+        errorConstraint: error.constraint,
+        userProductData: userProduct,
+        timestamp: new Date().toISOString()
+      });
       throw error;
     }
   }
@@ -55,9 +83,33 @@ export class PgStorage implements IStorage {
 
   async getUserProductsByUser(userId: number): Promise<UserProduct[]> {
     try {
-      return await db.select().from(schema.userProducts).where(eq(schema.userProducts.userId, userId));
-    } catch (error) {
-      logger.error("Failed to get user products by user", { error, userId });
+      // VERBOSE: Log the operation attempt
+      logger.debug("PgStorage.getUserProductsByUser - Beginning retrieval", {
+        userId,
+        timestamp: new Date().toISOString()
+      });
+      
+      const products = await db.select().from(schema.userProducts).where(eq(schema.userProducts.userId, userId));
+      
+      // VERBOSE: Log the result
+      logger.debug("PgStorage.getUserProductsByUser - Retrieval completed", {
+        userId,
+        productsFound: products.length,
+        products: products,
+        timestamp: new Date().toISOString()
+      });
+      
+      return products;
+    } catch (error: any) {
+      // VERBOSE: Enhanced error logging
+      logger.error("PgStorage.getUserProductsByUser - Failed to get user products by user", { 
+        error,
+        errorMessage: error.message || "Unknown error",
+        errorCode: error.code,
+        errorDetail: error.detail,
+        userId,
+        timestamp: new Date().toISOString()
+      });
       throw error;
     }
   }
