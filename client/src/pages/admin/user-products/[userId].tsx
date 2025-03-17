@@ -17,6 +17,8 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { EditableField } from "@/components/ui/editable-field";
+import { EndpointDialog } from "@/components/user-products/endpoint-dialog";
+import { RunEndpointDialog } from "@/components/user-products/run-endpoint-dialog";
 import { 
   Loader2, 
   Plus, 
@@ -27,7 +29,8 @@ import {
   Terminal,
   Link as LinkIcon,
   PackageOpen,
-  AlertCircle
+  AlertCircle,
+  Play
 } from "lucide-react";
 
 interface UserProductWithDetails extends UserProduct {
@@ -732,6 +735,7 @@ interface UserProductsListProps {
   onDelete: (userProduct: UserProductWithDetails) => void;
   onAddEndpoint: (userProduct: UserProductWithDetails) => void;
   onDeleteEndpoint: (endpointId: number) => void;
+  onRunEndpoint: (endpoint: UserProductEndpoint, apiSettingName: string) => void;
   renderProductName: (productId: number) => string;
   renderStatusBadge: (status: string) => React.ReactNode;
   renderEndpointName: (apiSettingId: number) => string;
