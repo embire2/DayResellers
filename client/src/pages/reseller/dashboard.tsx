@@ -16,13 +16,32 @@ export default function ResellerDashboard() {
   const { toast } = useToast();
   const resellerGroup = user?.resellerGroup || 1;
 
+  // Define types for the stats
+  type StatsData = {
+    activeClients: number;
+    activeSims: number;
+    monthlyRevenue: string;
+  };
+
+  // Define client type
+  type ClientWithProducts = {
+    id: number;
+    name: string;
+    products: {
+      count: number;
+      summary: string;
+    };
+    lastBilledDate: string;
+    status: string;
+  };
+
   // Fetch stats for the dashboard
-  const { data: stats } = useQuery({
+  const { data: stats = { activeClients: 0, activeSims: 0, monthlyRevenue: "R 0.00" } } = useQuery<StatsData>({
     queryKey: ['/api/reseller/stats'],
   });
 
   // Fetch client summaries
-  const { data: clients, isLoading: isLoadingClients } = useQuery({
+  const { data: clients = [], isLoading: isLoadingClients } = useQuery<ClientWithProducts[]>({
     queryKey: ['/api/clients'],
   });
 

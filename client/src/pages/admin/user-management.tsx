@@ -112,11 +112,7 @@ export default function UserManagement() {
       });
       
       // Use the apiRequest function which already handles error checking and JSON parsing
-      return apiRequest<User>("/api/users", {
-        method: "POST",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData)
-      });
+      return apiRequest<User>("POST", "/api/users", userData);
     },
     onSuccess: (userData: User) => {
       console.log("User created successfully:", userData.username);
@@ -146,13 +142,9 @@ export default function UserManagement() {
   // Update credit mutation
   const updateCreditMutation = useMutation({
     mutationFn: async (data: z.infer<typeof updateCreditSchema>) => {
-      return apiRequest<User>(`/api/users/${data.userId}/credit`, {
-        method: "POST",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: data.amount,
-          type: data.type,
-        })
+      return apiRequest<User>("POST", `/api/users/${data.userId}/credit`, {
+        amount: data.amount,
+        type: data.type,
       });
     },
     onSuccess: () => {
@@ -182,11 +174,7 @@ export default function UserManagement() {
       // Only include password if it was changed (not empty)
       const payload = password ? { ...userData, password } : userData;
       
-      return apiRequest<User>(`/api/users/${userId}`, {
-        method: "PUT",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      return apiRequest<User>("PUT", `/api/users/${userId}`, payload);
     },
     onSuccess: (userData: User) => {
       queryClient.invalidateQueries({ queryKey: ['/api/users'] });
@@ -234,7 +222,10 @@ export default function UserManagement() {
     form.setValue("role", user.role as "admin" | "reseller");
     form.setValue("resellerGroup", user.resellerGroup?.toString() || "1");
     form.setValue("creditBalance", user.creditBalance?.toString() || "0");
-    form.setValue("paymentMode", user.paymentMode || "credit");
+    // Ensure we're using a valid PaymentMode enum value
+    form.setValue("paymentMode", (user.paymentMode === "credit" || user.paymentMode === "debit") 
+      ? user.paymentMode 
+      : "credit");
     // Don't set the password fields - they should be left blank when editing
     form.setValue("password", "");
     form.setValue("confirmPassword", "");
