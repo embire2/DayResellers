@@ -75,7 +75,10 @@ router.get("/:userId", async (req: Request, res: Response) => {
     
     // Try direct database query using the pool
     try {
-      const pool = require('../db').pool;
+      // Directly import the pool
+      const { pool } = await import('../db');
+      
+      // Execute the query
       const directResult = await pool.query(
         'SELECT * FROM user_products WHERE user_id = $1',
         [userId]
