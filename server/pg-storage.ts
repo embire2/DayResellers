@@ -317,8 +317,46 @@ export class PgStorage implements IStorage {
   // User operations
   async getUser(id: number): Promise<User | undefined> {
     try {
-      const users = await db.select().from(schema.users).where(eq(schema.users.id, id));
-      return users.length > 0 ? users[0] : undefined;
+      // VERBOSE: Log beginning of operation
+      logger.debug(`PgStorage.getUser - Looking up user with ID: ${id}`, {
+        userId: id,
+        timestamp: new Date().toISOString()
+      });
+      
+      // Use direct SQL query for consistency and better debugging
+      const { rows } = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+      
+      // Log the results
+      logger.debug(`PgStorage.getUser - SQL query result for user ID ${id}`, {
+        rowCount: rows.length,
+        userFound: rows.length > 0,
+        userData: rows.length > 0 ? {
+          id: rows[0].id,
+          username: rows[0].username,
+          role: rows[0].role,
+          paymentMode: rows[0].payment_mode
+        } : null
+      });
+      
+      if (rows.length === 0) {
+        return undefined;
+      }
+      
+      // Map snake_case to camelCase
+      const row = rows[0];
+      const user: User = {
+        id: row.id,
+        username: row.username,
+        password: row.password,
+        role: row.role,
+        creditBalance: row.credit_balance,
+        resellerGroup: row.reseller_group,
+        paymentMode: row.payment_mode,
+        dashboardConfig: row.dashboard_config,
+        createdAt: row.created_at
+      };
+      
+      return user;
     } catch (error) {
       logger.error(`Error in getUser(${id})`, {}, error as Error);
       throw error;
@@ -327,8 +365,46 @@ export class PgStorage implements IStorage {
 
   async getUserByUsername(username: string): Promise<User | undefined> {
     try {
-      const users = await db.select().from(schema.users).where(eq(schema.users.username, username));
-      return users.length > 0 ? users[0] : undefined;
+      // VERBOSE: Log beginning of operation
+      logger.debug(`PgStorage.getUserByUsername - Looking up user with username: ${username}`, {
+        username,
+        timestamp: new Date().toISOString()
+      });
+      
+      // Use direct SQL query for consistency
+      const { rows } = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+      
+      // Log the results
+      logger.debug(`PgStorage.getUserByUsername - SQL query result for username ${username}`, {
+        rowCount: rows.length,
+        userFound: rows.length > 0,
+        userData: rows.length > 0 ? {
+          id: rows[0].id,
+          username: rows[0].username,
+          role: rows[0].role,
+          paymentMode: rows[0].payment_mode
+        } : null
+      });
+      
+      if (rows.length === 0) {
+        return undefined;
+      }
+      
+      // Map snake_case to camelCase
+      const row = rows[0];
+      const user: User = {
+        id: row.id,
+        username: row.username,
+        password: row.password,
+        role: row.role,
+        creditBalance: row.credit_balance,
+        resellerGroup: row.reseller_group,
+        paymentMode: row.payment_mode,
+        dashboardConfig: row.dashboard_config,
+        createdAt: row.created_at
+      };
+      
+      return user;
     } catch (error) {
       logger.error(`Error in getUserByUsername(${username})`, {}, error as Error);
       throw error;
