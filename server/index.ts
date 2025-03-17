@@ -3,7 +3,10 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { v4 as uuidv4 } from 'uuid';
 import { logger } from './logger';
-import { checkConnection, runMigrations, createInitialAdminUser } from './db';
+import { checkConnection, runMigrations, createInitialAdminUser, pool } from './db';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 // Extend Request interface with id property
 declare global {
@@ -103,6 +106,42 @@ app.use((req, res, next) => {
     // Create initial admin user if it doesn't exist
     logger.info("Creating initial admin user if needed...");
     await createInitialAdminUser();
+    
+    // Ensure admin user is in proper state
+    logger.info("Verifying admin user state...");
+    try {
+      // Check for admin user
+      const adminCheck = await pool.query('SELECT * FROM users WHERE username = $1', ['ceo@openweb.co.za']);
+      
+      if (adminCheck.rows.length === 0) {
+        logger.warn("Admin user ceo@openweb.co.za not found, this may cause login issues");
+      } else {
+        logger.info("Admin user ceo@openweb.co.za exists", { userId: adminCheck.rows[0].id });
+        
+        // Get the current password format
+        const user = adminCheck.rows[0];
+        
+        // Auto-repair if password is not in the correct format 
+        if (!user.password.includes('.')) {
+          logger.warn("Admin user password not in hashed format, auto-repairing...");
+          
+          // Import the hashPassword function from auth.ts
+          const { hashPassword } = await import('./auth');
+          const hashedPassword = await hashPassword('Maniac20!');
+          
+          // Update admin user password
+          await pool.query(
+            'UPDATE users SET password = $1 WHERE username = $2',
+            [hashedPassword, 'ceo@openweb.co.za']
+          );
+          
+          logger.info("Admin user password auto-repaired successfully");
+        }
+      }
+    } catch (adminCheckError) {
+      logger.error("Error verifying admin user state", {}, adminCheckError as Error);
+      // Don't throw, just log the error - let the app continue
+    }
   } catch (error) {
     logger.fatal("Database initialization failed", {}, error as Error);
     process.exit(1);
