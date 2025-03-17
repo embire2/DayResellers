@@ -101,7 +101,9 @@ export default function Products() {
       if (error.message.includes("Insufficient credit balance")) {
         toast({
           title: "Insufficient credit",
-          description: "You don't have enough credit to purchase this product",
+          description: user?.paymentMode === 'credit' 
+            ? "You don't have enough credit to purchase this product" 
+            : "There was an error processing your debit order. Please contact support.",
           variant: "destructive",
         });
       } else {
@@ -226,6 +228,13 @@ export default function Products() {
                     <h3 className="font-medium mb-2">{selectedProduct.name}</h3>
                     <p className="text-sm text-neutral-dark mb-2">{selectedProduct.description}</p>
                     
+                    {/* Payment mode and pricing info */}
+                    <div className="mt-2 mb-4">
+                      <div className="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
+                        Payment Mode: {user?.paymentMode === 'credit' ? 'Credit Balance' : 'Debit Order'}
+                      </div>
+                    </div>
+                    
                     {/* Pro-rata pricing info */}
                     {getProRataPricing(selectedProduct) && (
                       <div className="mt-4 text-sm">
@@ -241,6 +250,13 @@ export default function Products() {
                           <span>Final Price:</span>
                           <span>{formatCurrency(getProRataPricing(selectedProduct)!.finalPrice)}</span>
                         </div>
+                        
+                        {user?.paymentMode === 'credit' && (
+                          <div className="flex justify-between items-center mt-4 text-info">
+                            <span>Your Credit Balance:</span>
+                            <span>{user?.creditBalance ? formatCurrency(parseFloat(user.creditBalance.toString())) : "R 0.00"}</span>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -294,7 +310,7 @@ export default function Products() {
                         Processing...
                       </>
                     ) : (
-                      "Purchase Product"
+                      user?.paymentMode === 'credit' ? "Purchase with Credit" : "Order with Debit"
                     )}
                   </Button>
                 </DialogFooter>

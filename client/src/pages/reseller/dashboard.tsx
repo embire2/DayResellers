@@ -44,27 +44,42 @@ export default function ResellerDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
         <h1 className="text-2xl font-semibold text-neutral-darker">Reseller Dashboard</h1>
 
-        {/* Credit Balance Card */}
+        {/* Credit Balance / Payment Mode Card */}
         <Card className="my-6">
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
               <div>
-                <h2 className="text-lg font-medium text-neutral-darker">Available Credit Balance</h2>
-                <p className="text-sm text-neutral-dark mt-1">Use your credit to purchase products for clients</p>
+                <h2 className="text-lg font-medium text-neutral-darker">
+                  {user?.paymentMode === 'credit' ? 'Available Credit Balance' : 'Payment Mode'}
+                </h2>
+                <p className="text-sm text-neutral-dark mt-1">
+                  {user?.paymentMode === 'credit' 
+                    ? 'Use your credit to purchase products for clients'
+                    : 'Your account is configured for automatic debit order payments'
+                  }
+                </p>
               </div>
               <div className="mt-4 md:mt-0">
-                <div className="text-3xl font-bold text-primary">
-                  {user?.creditBalance 
-                    ? formatCurrency(parseFloat(user.creditBalance.toString())) 
-                    : 'R 0.00'
-                  }
-                </div>
+                {user?.paymentMode === 'credit' ? (
+                  <div className="text-3xl font-bold text-primary">
+                    {user?.creditBalance 
+                      ? formatCurrency(parseFloat(user.creditBalance.toString())) 
+                      : 'R 0.00'
+                    }
+                  </div>
+                ) : (
+                  <div className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                    Debit Order
+                  </div>
+                )}
               </div>
             </div>
             <div className="mt-6">
-              <Button>
-                Add Credit
-              </Button>
+              {user?.paymentMode === 'credit' && (
+                <Button>
+                  Add Credit
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
