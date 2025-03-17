@@ -531,6 +531,7 @@ export default function UserProductsPage() {
             onDelete={openDeleteDialog}
             onAddEndpoint={openAddEndpointDialog}
             onDeleteEndpoint={handleDeleteEndpoint}
+            onRunEndpoint={handleRunEndpoint}
             renderProductName={renderProductName}
             renderStatusBadge={renderStatusBadge}
             renderEndpointName={renderEndpointName}
