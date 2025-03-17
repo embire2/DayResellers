@@ -731,7 +731,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Register the User Products router
-  app.use('/api/user-products', userProductsRouter);
+  // Add detailed request logging middleware for user products endpoint
+  app.use('/api/user-products', (req, res, next) => {
+    logger.warn(`[USER-PRODUCTS DEBUG] Request received:`, {
+      path: req.originalUrl,
+      method: req.method,
+      params: req.params,
+      query: req.query,
+      authenticatedUser: req.isAuthenticated() ? { 
+        id: req.user?.id, 
+        username: req.user?.username,
+        role: req.user?.role 
+      } : 'Not authenticated',
+      requestId: req.id
+    });
+    next();
+  }, userProductsRouter);
   app.use('/api/run-endpoint', runEndpointRouter);
 
   const httpServer = createServer(app);

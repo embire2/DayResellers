@@ -34,32 +34,91 @@ export default function MyProducts() {
   const [selectedProduct, setSelectedProduct] = useState<UserProductWithProduct | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
 
-  // Query for user products
+  // Enhanced authentication check
+  React.useEffect(() => {
+    if (user) {
+      console.log("User authenticated in MyProducts:", {
+        userId: user.id,
+        username: user.username,
+        role: user.role,
+        isAuthenticated: true
+      });
+    } else {
+      console.warn("No authenticated user in MyProducts");
+    }
+  }, [user]);
+
+  // Query for user products with enhanced error handling and debugging
   const { data: userProducts = [], isLoading: userProductsLoading, error: userProductsError, refetch: refetchUserProducts } = useQuery<UserProductWithProduct[]>({
     queryKey: [`/api/user-products/${user?.id}`],
-    queryFn: getQueryFn<UserProductWithProduct[]>({
-      on401: "returnNull",
-    }),
-    enabled: !!user?.id
+    queryFn: async ({ queryKey }) => {
+      // Enhanced custom query function with extra logging
+      const url = queryKey[0] as string;
+      console.log(`Making direct fetch request to: ${url}`);
+      
+      try {
+        const res = await fetch(url, {
+          credentials: "include",
+          headers: {
+            "Accept": "application/json"
+          }
+        });
+        
+        console.log(`User products API response:`, {
+          status: res.status,
+          statusText: res.statusText,
+          url: url
+        });
+
+        if (res.status === 401) {
+          console.error(`Authentication error for user products (user ${user?.id})`);
+          return [];
+        }
+
+        if (!res.ok) {
+          const errorText = await res.text();
+          console.error(`Error fetching user products: ${errorText}`);
+          throw new Error(`${res.status}: ${errorText}`);
+        }
+
+        const data = await res.json();
+        console.log(`Successfully retrieved user products:`, {
+          count: Array.isArray(data) ? data.length : 'not an array',
+          data: data
+        });
+        return data;
+      } catch (error) {
+        console.error(`Exception in user products fetch:`, error);
+        throw error;
+      }
+    },
+    enabled: !!user?.id,
+    retry: 1
   });
   
   // Log product data on each render for debugging
   React.useEffect(() => {
     if (userProducts && userProducts.length > 0) {
-      console.log("Products available:", { 
+      console.log("Products available for display:", { 
         userId: user?.id,
         productCount: userProducts.length,
         products: userProducts 
       });
+    } else {
+      console.log("No products available for display", {
+        userId: user?.id,
+        isLoading: userProductsLoading,
+        hasError: !!userProductsError
+      });
     }
     
     if (userProductsError) {
-      console.error("Error fetching products:", { 
+      console.error("Error in products query:", { 
         userId: user?.id, 
         error: userProductsError 
       });
     }
-  }, [userProducts, userProductsError, user?.id]);
+  }, [userProducts, userProductsLoading, userProductsError, user?.id]);
 
   // Status rendering is handled within each component where needed
 
