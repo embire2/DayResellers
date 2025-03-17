@@ -3,7 +3,7 @@
  */
 import fetch from 'node-fetch';
 
-const BASE_URL = 'http://localhost:3000'; // Adjust if your server uses a different port
+const BASE_URL = 'http://localhost:5000'; // Server runs on port 5000 as configured in server/index.ts
 
 async function loginAsGale() {
   try {
