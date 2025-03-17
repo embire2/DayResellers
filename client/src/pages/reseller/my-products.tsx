@@ -155,6 +155,7 @@ export default function MyProducts() {
                     <p><strong>Description:</strong> {selectedProduct.product.description}</p>
                     <p><strong>Category:</strong> {selectedProduct.product.categoryId}</p>
                     <p><strong>API Endpoint:</strong> {selectedProduct.product.apiEndpoint || 'N/A'}</p>
+                    <p className="mt-2"><strong>Payment Method:</strong> {user?.paymentMode === 'credit' ? 'Credit Balance' : 'Debit Order'}</p>
                   </div>
                 </div>
               )}
