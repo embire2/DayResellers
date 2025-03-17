@@ -119,12 +119,15 @@ export default function UserProductsPage() {
       
       const response = await apiRequest('POST', '/api/user-products', payload);
       
-      console.log('User product creation response:', response);
-      return response;
+      // Process the response to extract the JSON data
+      const responseData = await response.json();
+      console.log('User product creation response:', responseData);
+      return responseData;
     },
     onSuccess: (data) => {
       console.log('User product created successfully:', data);
-      queryClient.invalidateQueries({ queryKey: ['/api/user-products', userId] });
+      // Force refetch after successful creation
+      refetchUserProducts();
       setIsAddDialogOpen(false);
       resetForm();
       toast({
@@ -145,10 +148,13 @@ export default function UserProductsPage() {
 
   const deleteUserProductMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest('DELETE', `/api/user-products/${id}`);
+      const response = await apiRequest('DELETE', `/api/user-products/${id}`);
+      // For DELETE operations, we may not get a response body
+      return response;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/user-products', userId] });
+      // Force refetch after deleting
+      refetchUserProducts();
       setIsDeleteDialogOpen(false);
       toast({
         title: "Product removed",
@@ -172,10 +178,17 @@ export default function UserProductsPage() {
         apiSettingId: data.apiSettingId,
         customParameters: data.customParameters ? JSON.parse(data.customParameters) : null
       };
-      return apiRequest('POST', `/api/user-products/${data.userProductId}/endpoints`, payload);
+      const response = await apiRequest('POST', `/api/user-products/${data.userProductId}/endpoints`, payload);
+      try {
+        return await response.json();
+      } catch (e) {
+        // In case the endpoint doesn't return JSON
+        return response;
+      }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/user-products', userId] });
+      // Force refetch after endpoint addition
+      refetchUserProducts();
       setIsAddEndpointDialogOpen(false);
       setEndpointFormData({
         apiSettingId: '',
@@ -198,10 +211,13 @@ export default function UserProductsPage() {
 
   const deleteEndpointMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest('DELETE', `/api/user-products/endpoints/${id}`);
+      const response = await apiRequest('DELETE', `/api/user-products/endpoints/${id}`);
+      // For DELETE operations, we may not get a response body
+      return response;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/user-products', userId] });
+      // Force refetch after endpoint deletion
+      refetchUserProducts();
       toast({
         title: "Endpoint removed",
         description: "The API endpoint has been successfully removed.",
@@ -219,10 +235,17 @@ export default function UserProductsPage() {
 
   const updateUserProductMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number, data: Partial<UserProduct> }) => {
-      return apiRequest('PATCH', `/api/user-products/${id}`, data);
+      const response = await apiRequest('PATCH', `/api/user-products/${id}`, data);
+      try {
+        return await response.json();
+      } catch (e) {
+        // In case the endpoint doesn't return JSON
+        return response;
+      }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/user-products', userId] });
+      // Force refetch after update
+      refetchUserProducts();
       toast({
         title: "Product updated",
         description: "The product details have been successfully updated.",

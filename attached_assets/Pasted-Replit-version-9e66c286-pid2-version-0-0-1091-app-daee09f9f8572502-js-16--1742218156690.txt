@@ -1,0 +1,46 @@
+Replit version 9e66c286, pid2 version 0.0.1091
+_app-daee09f9f8572502.js:16 
+      /////////////////////
+   ///////////////////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////        Curious and driven?
+  ///////////////@@@@@@@///////        Work with us!
+  ///////////////@@@@@@@///////
+  ///////////////@@@@@@@///////        https://join.replit.com/hack.with.us
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@#//////////////
+   ///////////////////////////
+      /////////////////////
+      
+_app-daee09f9f8572502.js:16 [LaunchDarkly] LaunchDarkly client initialized
+_app-daee09f9f8572502.js:16 [TikTok Pixel] - Invalid pixel ID
+Issue: The pixel ID is invalid. This could prevent your pixel from receiving data.
+Suggestion: Please go to Events Manager and find the correct pixel ID.
+(anonymous) @ _app-daee09f9f8572502.js:16Understand this warningAI
+OpenWebResellers:1 Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.
+27Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.Understand this errorAI
+framework-0a405e257f583d5c.js:1 Unrecognized feature: 'ambient-light-sensor'.
+_ @ framework-0a405e257f583d5c.js:1Understand this warningAI
+framework-0a405e257f583d5c.js:1 Unrecognized feature: 'battery'.
+_ @ framework-0a405e257f583d5c.js:1Understand this warningAI
+framework-0a405e257f583d5c.js:1 Unrecognized feature: 'execution-while-not-rendered'.
+_ @ framework-0a405e257f583d5c.js:1Understand this warningAI
+framework-0a405e257f583d5c.js:1 Unrecognized feature: 'execution-while-out-of-viewport'.
+_ @ framework-0a405e257f583d5c.js:1Understand this warningAI
+framework-0a405e257f583d5c.js:1 Unrecognized feature: 'layout-animations'.
+_ @ framework-0a405e257f583d5c.js:1Understand this warningAI
+framework-0a405e257f583d5c.js:1 Unrecognized feature: 'legacy-image-formats'.
+_ @ framework-0a405e257f583d5c.js:1Understand this warningAI
+framework-0a405e257f583d5c.js:1 Unrecognized feature: 'navigation-override'.
+_ @ framework-0a405e257f583d5c.js:1Understand this warningAI
+framework-0a405e257f583d5c.js:1 Unrecognized feature: 'oversized-images'.
+_ @ framework-0a405e257f583d5c.js:1Understand this warningAI
+framework-0a405e257f583d5c.js:1 Unrecognized feature: 'publickey-credentials'.
+_ @ framework-0a405e257f583d5c.js:1Understand this warningAI
+framework-0a405e257f583d5c.js:1 Unrecognized feature: 'speaker-selection'.
+_ @ framework-0a405e257f583d5c.js:1Understand this warningAI
+framework-0a405e257f583d5c.js:1 Unrecognized feature: 'unoptimized-images'.
+_ @ framework-0a405e257f583d5c.js:1Understand this warningAI
+framework-0a405e257f583d5c.js:1 U
