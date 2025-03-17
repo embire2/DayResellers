@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { 
   Dialog, 
   DialogContent, 
@@ -86,6 +87,7 @@ export default function UserManagement() {
       role: "reseller",
       creditBalance: "0",
       resellerGroup: "1",
+      paymentMode: "credit"
     },
   });
 
@@ -232,6 +234,7 @@ export default function UserManagement() {
     form.setValue("role", user.role as "admin" | "reseller");
     form.setValue("resellerGroup", user.resellerGroup?.toString() || "1");
     form.setValue("creditBalance", user.creditBalance?.toString() || "0");
+    form.setValue("paymentMode", user.paymentMode || "credit");
     // Don't set the password fields - they should be left blank when editing
     form.setValue("password", "");
     form.setValue("confirmPassword", "");
@@ -349,6 +352,30 @@ export default function UserManagement() {
                   />
                   <FormField
                     control={form.control}
+                    name="paymentMode"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Payment Mode</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select payment mode" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="credit">Credit</SelectItem>
+                            <SelectItem value="debit">Debit Order</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
                     name="creditBalance"
                     render={({ field }) => (
                       <FormItem>
@@ -399,6 +426,7 @@ export default function UserManagement() {
                     <TableHead>Username</TableHead>
                     <TableHead>Role</TableHead>
                     <TableHead>Group</TableHead>
+                    <TableHead>Payment Mode</TableHead>
                     <TableHead>Credit Balance</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -416,24 +444,33 @@ export default function UserManagement() {
                       </TableCell>
                       <TableCell>{user.resellerGroup || "N/A"}</TableCell>
                       <TableCell>
-                        {user.creditBalance 
-                          ? formatCurrency(parseFloat(user.creditBalance.toString())) 
-                          : "R 0.00"
+                        <Badge variant={user.paymentMode === 'credit' ? 'outline' : 'default'}>
+                          {user.paymentMode === 'credit' ? 'Credit' : 'Debit Order'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {user.paymentMode === 'credit' 
+                          ? (user.creditBalance 
+                              ? formatCurrency(parseFloat(user.creditBalance.toString())) 
+                              : "R 0.00")
+                          : "N/A"
                         }
                       </TableCell>
                       <TableCell>
                         {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-primary mr-2"
-                          onClick={() => openCreditModal(user)}
-                        >
-                          <RefreshCw className="h-4 w-4 mr-1" />
-                          Credit
-                        </Button>
+                        {user.paymentMode === 'credit' && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-primary mr-2"
+                            onClick={() => openCreditModal(user)}
+                          >
+                            <RefreshCw className="h-4 w-4 mr-1" />
+                            Credit
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="sm"
@@ -628,6 +665,30 @@ export default function UserManagement() {
                         <SelectContent>
                           <SelectItem value="1">Group 1</SelectItem>
                           <SelectItem value="2">Group 2</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="paymentMode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Payment Mode</FormLabel>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select payment mode" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="credit">Credit</SelectItem>
+                          <SelectItem value="debit">Debit Order</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
