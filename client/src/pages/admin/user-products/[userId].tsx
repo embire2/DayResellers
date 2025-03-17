@@ -95,13 +95,32 @@ export default function UserProductsPage() {
 
   const { data: userProducts = [], isLoading: userProductsLoading, refetch: refetchUserProducts } = useQuery({
     queryKey: ['/api/user-products', userId],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       console.log(`Fetching user products for userId: ${userId}`);
-      const result = await getQueryFn<UserProductWithDetails[]>({ on401: "returnNull" })(`/api/user-products/${userId}`);
+      
+      // Use native fetch with explicit options for more control
+      const response = await fetch(`/api/user-products/${userId}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        signal
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to fetch user products: ${response.status} ${errorText}`);
+      }
+      
+      const result = await response.json();
       console.log('User products API response:', result);
-      return result;
+      return result as UserProductWithDetails[];
     },
-    enabled: !!userId
+    enabled: !!userId,
+    staleTime: 0, // Don't cache the results - always get fresh data
+    refetchOnMount: true, // Always refetch when component is mounted
+    refetchOnWindowFocus: false // Don't auto refetch when window regains focus
   });
 
   // Mutations

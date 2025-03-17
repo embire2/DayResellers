@@ -1,0 +1,279 @@
+8884-09755690f4518eae.js:1 Replit version 9e66c286, pid2 version 0.0.1091
+_app-daee09f9f8572502.js:16 
+      /////////////////////
+   ///////////////////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////        Curious and driven?
+  ///////////////@@@@@@@///////        Work with us!
+  ///////////////@@@@@@@///////
+  ///////////////@@@@@@@///////        https://join.replit.com/hack.with.us
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@#//////////////
+   ///////////////////////////
+      /////////////////////
+      
+_app-daee09f9f8572502.js:16 [LaunchDarkly] LaunchDarkly client initialized
+_app-daee09f9f8572502.js:16 [TikTok Pixel] - Invalid pixel ID
+Issue: The pixel ID is invalid. This could prevent your pixel from receiving data.
+Suggestion: Please go to Events Manager and find the correct pixel ID.
+(anonymous) @ _app-daee09f9f8572502.js:16
+OpenWebResellers:1 Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+framework-0a405e257f583d5c.js:1 Unrecognized feature: 'ambient-light-sensor'.
+_ @ framework-0a405e257f583d5c.js:1
+framework-0a405e257f583d5c.js:1 Unrecognized feature: 'battery'.
+_ @ framework-0a405e257f583d5c.js:1
+framework-0a405e257f583d5c.js:1 Unrecognized feature: 'execution-while-not-rendered'.
+_ @ framework-0a405e257f583d5c.js:1
+framework-0a405e257f583d5c.js:1 Unrecognized feature: 'execution-while-out-of-viewport'.
+_ @ framework-0a405e257f583d5c.js:1
+framework-0a405e257f583d5c.js:1 Unrecognized feature: 'layout-animations'.
+_ @ framework-0a405e257f583d5c.js:1
+framework-0a405e257f583d5c.js:1 Unrecognized feature: 'legacy-image-formats'.
+_ @ framework-0a405e257f583d5c.js:1
+framework-0a405e257f583d5c.js:1 Unrecognized feature: 'navigation-override'.
+_ @ framework-0a405e257f583d5c.js:1
+framework-0a405e257f583d5c.js:1 Unrecognized feature: 'oversized-images'.
+_ @ framework-0a405e257f583d5c.js:1
+framework-0a405e257f583d5c.js:1 Unrecognized feature: 'publickey-credentials'.
+_ @ framework-0a405e257f583d5c.js:1
+framework-0a405e257f583d5c.js:1 Unrecognized feature: 'speaker-selection'.
+_ @ framework-0a405e257f583d5c.js:1
+framework-0a405e257f583d5c.js:1 Unrecognized feature: 'unoptimized-images'.
+_ @ framework-0a405e257f583d5c.js:1
+framework-0a405e257f583d5c.js:1 Unrecognized feature: 'unsized-media'.
+_ @ framework-0a405e257f583d5c.js:1
+framework-0a405e257f583d5c.js:1 Unrecognized feature: 'pointer-lock'.
+_ @ framework-0a405e257f583d5c.js:1
+framework-0a405e257f583d5c.js:1 Allow attribute will take precedence over 'allowfullscreen'.
+_ @ framework-0a405e257f583d5c.js:1
+framework-0a405e257f583d5c.js:1 Allow attribute will take precedence over 'allowpaymentrequest'.
+_ @ framework-0a405e257f583d5c.js:1
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+OpenWebResellers:1 Blocked aria-hidden on an element because its descendant retained focus. The focus must not be hidden from assistive technology users. Avoid using aria-hidden on a focused element or its ancestor. Consider using the inert attribute instead, which will also prevent focus. For more details, see the aria-hidden section of the WAI-ARIA specification at https://w3c.github.io/aria/#aria-hidden.
+Element with focus: div
+Ancestor with aria-hidden:  <div class=​" useView_view__C2mnv css-1gdmsm6 Surface_surfaceDefault__TcNI5" aria-hidden=​"true" style=​"--useView--gap:​ 4px;​ --borderColor:​ var(--outline-dimmer)​;​ --focusedBorderColor:​ var(--accent-primary-default)​;​ --hoverBorderColor:​ var(--accent-primary-default)​;​">​…​</div>​flex
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//auth' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//auth' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//auth' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+OpenWebResellers:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+OpenWebResellers:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+OpenWebResellers:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//auth' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//auth' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//auth' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//auth' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//auth' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//admin/dashboard-designer' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//admin/api-integration' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//admin/api-test' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//admin/user-products' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//admin/users' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//admin/user-products/4' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//admin/users' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//admin/user-products/4' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//admin/users' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//admin/user-products/4' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 task queue exceeded allotted deadline by 40ms
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//admin/users' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//admin/user-products/3' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//admin/users' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//admin/user-products/3' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//admin/users' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//admin/user-products/3' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+workspace_iframe.html:32 Unrecognized feature: 'ambient-light-sensor'.
+workspace_iframe.html:32 Unrecognized feature: 'ambient-light-sensor'.
+workspace_iframe.html:32 Unrecognized feature: 'battery'.
+workspace_iframe.html:32 Unrecognized feature: 'battery'.
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-not-rendered'.
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-not-rendered'.
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-out-of-viewport'.
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-out-of-viewport'.
+workspace_iframe.html:32 Unrecognized feature: 'layout-animations'.
+workspace_iframe.html:32 Unrecognized feature: 'layout-animations'.
+workspace_iframe.html:32 Unrecognized feature: 'legacy-image-formats'.
+workspace_iframe.html:32 Unrecognized feature: 'legacy-image-formats'.
+workspace_iframe.html:32 Unrecognized feature: 'navigation-override'.
+workspace_iframe.html:32 Unrecognized feature: 'navigation-override'.
+workspace_iframe.html:32 Unrecognized feature: 'oversized-images'.
+workspace_iframe.html:32 Unrecognized feature: 'oversized-images'.
+workspace_iframe.html:32 Unrecognized feature: 'publickey-credentials'.
+workspace_iframe.html:32 Unrecognized feature: 'publickey-credentials'.
+workspace_iframe.html:32 Unrecognized feature: 'speaker-selection'.
+workspace_iframe.html:32 Unrecognized feature: 'speaker-selection'.
+workspace_iframe.html:32 Unrecognized feature: 'unoptimized-images'.
+workspace_iframe.html:32 Unrecognized feature: 'unoptimized-images'.
+workspace_iframe.html:32 Unrecognized feature: 'unsized-media'.
+workspace_iframe.html:32 Unrecognized feature: 'unsized-media'.
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowfullscreen'.
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowfullscreen'.
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowpaymentrequest'.
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowpaymentrequest'.
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//admin/users' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+Console.js:61 Manage button clicked for user: Object
+Console.js:61 User-products page - params: Object
+Console.js:61 User-products page - userId: 3
+Console.js:61 Fetching user products for userId: 3
+Console.js:61 User-products page - params: Object
+Console.js:61 User-products page - userId: 3
+_app-daee09f9f8572502.js:16 Invalid href 'https://2ec079e8-e7d5-4eaa-9a25-4d829e40098d-00-27lre2iggvgup.worf.replit.dev//admin/user-products/3' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonymous) @ _app-daee09f9f8572502.js:16
+Console.js:61 User-products page - params: Object
+Console.js:61 User-products page - userId: 3
+Console.js:61 User-products page - params: Object
+Console.js:61 User-products page - userId: 3
+Console.js:61 User fetch result: Object
+Console.js:61 User-products page - params: Object
+Console.js:61 User-products page - userId: 3
+Console.js:61 User fetch result: Object
+Console.js:61 User-products page - params: Object
+Console.js:61 User-products page - userId: 3
+Console.js:61 User fetch result: Object
+Console.js:61 User-products page - params: Object
+Console.js:61 User-products page - userId: 3
+Console.js:61 User fetch result: Object
+Console.js:61 User-products page - params: Object
+Console.js:61 User-products page - userId: 3
+Console.js:61 User fetch result: Object
+Console.js:61 User-products page - params: Object
+Console.js:61 User-products page - userId: 3
+Console.js:61 User fetch result: Object
+Console.js:61 Creating user product with payload: Object
+Console.js:61 User-products page - params: Object
+Console.js:61 User-products page - userId: 3
+Console.js:61 User fetch result: Object
+Console.js:61 User product creation response: Object
+Console.js:61 User product created successfully: Object
+Console.js:61 Fetching user products for userId: 3
+Console.js:61 User-products page - params: Object
+Console.js:61 User-products page - userId: 3
+Console.js:61 User fetch result: Object
+Console.js:61 User-products page - params: Object
+Console.js:61 User-products page - userId: 3
+Console.js:61 User fetch result: Object
+Console.js:61 Fetching user products for userId: 3
+Console.js:61 User-products page - params: Object
+Console.js:61 User-products page - userId: 3
+Console.js:61 User fetch result: Object
+Console.js:61 User-products page - params: Object
+Console.js:61 User-products page - userId: 3
+Console.js:61 User fetch result: Object
+
+                
+          
+          
+          
+         Chrome is moving towards a new experience that allows users to choose to browse without third-party cookies.
+
+                
+          
+          
+          
+         Chrome is moving towards a new experience that allows users to choose to browse without third-party cookies.
