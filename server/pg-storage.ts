@@ -89,33 +89,20 @@ export class PgStorage implements IStorage {
         timestamp: new Date().toISOString()
       });
       
-      // Using the ORM approach
-      const products = await db.select().from(schema.userProducts).where(eq(schema.userProducts.userId, userId));
-      
-      // If products were found, use them
-      if (products && products.length > 0) {
-        logger.debug("PgStorage.getUserProductsByUser - Products found using ORM", {
-          userId,
-          productsFound: products.length,
-          products: products,
-          timestamp: new Date().toISOString()
-        });
-        return products;
-      }
-      
-      // Fallback to direct SQL query if ORM query returned no results
-      logger.warn("PgStorage.getUserProductsByUser - ORM query returned no results, trying direct SQL", {
+      // Skip ORM approach and always use direct SQL query with transformation
+      // since we know there's a mismatch between column names in DB and our schema
+      logger.debug("PgStorage.getUserProductsByUser - Using direct SQL query", {
         userId,
         timestamp: new Date().toISOString()
       });
       
-      // Direct query as a fallback
+      // Direct query to get data from PostgreSQL
       const { rows } = await pool.query(
         'SELECT * FROM user_products WHERE user_id = $1',
         [userId]
       );
       
-      // Transform the results to match the expected schema format
+      // Transform the results to match the expected schema format - camelCase to snake_case mapping
       const transformedProducts = rows.map(row => ({
         id: row.id,
         userId: row.user_id,
@@ -152,8 +139,33 @@ export class PgStorage implements IStorage {
 
   async getUserProduct(id: number): Promise<UserProduct | undefined> {
     try {
-      const products = await db.select().from(schema.userProducts).where(eq(schema.userProducts.id, id));
-      return products.length > 0 ? products[0] : undefined;
+      // Use direct SQL query with transformation
+      logger.debug("PgStorage.getUserProduct - Using direct SQL query", {
+        id,
+        timestamp: new Date().toISOString()
+      });
+      
+      const { rows } = await pool.query(
+        'SELECT * FROM user_products WHERE id = $1',
+        [id]
+      );
+      
+      if (rows.length === 0) {
+        return undefined;
+      }
+      
+      // Transform the result to match the expected schema format
+      const row = rows[0];
+      return {
+        id: row.id,
+        userId: row.user_id,
+        productId: row.product_id,
+        username: row.username,
+        msisdn: row.msisdn,
+        comments: row.comments,
+        status: row.status,
+        createdAt: row.created_at
+      };
     } catch (error) {
       logger.error("Failed to get user product", { error, id });
       throw error;
