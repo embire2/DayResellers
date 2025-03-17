@@ -1,7 +1,13 @@
 /**
  * Test script to query user products directly from the database
  */
-import { pool } from './server/db.js';
+import pg from 'pg';
+const { Pool } = pg;
+
+// Initialize PostgreSQL connection pool
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
 
 async function getUserProducts() {
   try {
