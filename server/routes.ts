@@ -7,6 +7,7 @@ import { calculateProRataPrice, getPriceByResellerGroup } from "../client/src/li
 import { setupDiagnosticRoutes, recordDiagnosticError } from "./diagnostic-routes";
 import { logger } from "./logger";
 import userProductsRouter from "./api/user-products";
+import runEndpointRouter from "./api/run-endpoint";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes

@@ -661,6 +661,19 @@ export default function UserProductsPage() {
               </div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="endpointPath" className="text-right">
+                Endpoint Path
+              </Label>
+              <Input
+                id="endpointPath"
+                name="endpointPath"
+                value={endpointFormData.endpointPath}
+                onChange={handleEndpointInputChange}
+                className="col-span-3"
+                placeholder="/rest/lte/usernameInfo.php"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="customParameters" className="text-right">
                 Parameters (JSON)
               </Label>
