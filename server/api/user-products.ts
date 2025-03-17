@@ -14,6 +14,14 @@ router.use((req: Request, res: Response, next: any) => {
   if (!req.isAuthenticated()) {
     return res.status(401).json({ error: "Not authenticated" });
   }
+  
+  // For debugging purposes, log the authenticated user
+  logger.debug(`API user-products - User authenticated: ${req.user?.username} (${req.user?.id})`, {
+    authenticatedUserId: req.user?.id,
+    authenticatedUserRole: req.user?.role,
+    requestedURL: req.originalUrl
+  });
+  
   next();
 });
 
