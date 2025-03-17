@@ -73,6 +73,12 @@ router.get("/:userId", async (req: Request, res: Response) => {
       requestId: req.id,
     });
     
+    // CRITICAL DEBUG - Log the products found
+    logger.warn(`CRITICAL DEBUG - User products query for user ${userId}:`, {
+      userProducts: JSON.stringify(userProducts),
+      requestId: req.id
+    });
+    
     // If no products found, return empty array instead of error
     if (!userProducts || userProducts.length === 0) {
       logger.debug(`GET /user-products/:userId - No user products found for user ID ${userId}, returning empty array`, {
