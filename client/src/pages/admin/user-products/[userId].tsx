@@ -219,11 +219,7 @@ export default function UserProductsPage() {
 
   const updateUserProductMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number, data: Partial<UserProduct> }) => {
-      return apiRequest(`/api/user-products/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
+      return apiRequest('PATCH', `/api/user-products/${id}`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/user-products', userId] });
