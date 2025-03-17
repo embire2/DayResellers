@@ -50,6 +50,7 @@ const createUserSchema = insertUserSchema.extend({
   confirmPassword: z.string().min(6, "Password must be at least 6 characters"),
   creditBalance: z.string().optional(),
   resellerGroup: z.string().optional(),
+  paymentMode: z.enum(["credit", "debit"]).default("credit"),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match",
   path: ["confirmPassword"],

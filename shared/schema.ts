@@ -15,6 +15,7 @@ export const users = pgTable("users", {
   role: text("role").notNull().default("reseller"),
   creditBalance: decimal("credit_balance", { precision: 10, scale: 2 }).notNull().default("0"),
   resellerGroup: integer("reseller_group").default(1),
+  paymentMode: text("payment_mode").default("credit"), // 'credit' or 'debit'
   dashboardConfig: jsonb("dashboard_config"),
   createdAt: timestamp("created_at").defaultNow()
 });
