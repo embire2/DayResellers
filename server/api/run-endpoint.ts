@@ -2,7 +2,7 @@
  * API route for running external API endpoints
  */
 import { Router, Request, Response } from "express";
-import { storage } from "../storage";
+import { pgStorage as storage } from "../pg-storage";
 import axios from "axios";
 import { logger } from "../logger";
 

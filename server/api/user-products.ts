@@ -2,7 +2,7 @@
  * API routes for user products
  */
 import { Request, Response, Router } from "express";
-import { storage } from "../storage";
+import { pgStorage as storage } from "../pg-storage";
 import { insertUserProductSchema, insertUserProductEndpointSchema } from "../../shared/schema";
 import { logger } from "../logger";
 import { recordDiagnosticError } from "../diagnostic-routes";
