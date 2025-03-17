@@ -89,17 +89,53 @@ export class PgStorage implements IStorage {
         timestamp: new Date().toISOString()
       });
       
+      // Using the ORM approach
       const products = await db.select().from(schema.userProducts).where(eq(schema.userProducts.userId, userId));
       
-      // VERBOSE: Log the result
-      logger.debug("PgStorage.getUserProductsByUser - Retrieval completed", {
+      // If products were found, use them
+      if (products && products.length > 0) {
+        logger.debug("PgStorage.getUserProductsByUser - Products found using ORM", {
+          userId,
+          productsFound: products.length,
+          products: products,
+          timestamp: new Date().toISOString()
+        });
+        return products;
+      }
+      
+      // Fallback to direct SQL query if ORM query returned no results
+      logger.warn("PgStorage.getUserProductsByUser - ORM query returned no results, trying direct SQL", {
         userId,
-        productsFound: products.length,
-        products: products,
         timestamp: new Date().toISOString()
       });
       
-      return products;
+      // Direct query as a fallback
+      const { rows } = await pool.query(
+        'SELECT * FROM user_products WHERE user_id = $1',
+        [userId]
+      );
+      
+      // Transform the results to match the expected schema format
+      const transformedProducts = rows.map(row => ({
+        id: row.id,
+        userId: row.user_id,
+        productId: row.product_id,
+        username: row.username,
+        msisdn: row.msisdn,
+        comments: row.comments,
+        status: row.status,
+        createdAt: row.created_at
+      }));
+      
+      // VERBOSE: Log the result of direct query
+      logger.debug("PgStorage.getUserProductsByUser - Direct SQL retrieval completed", {
+        userId,
+        productsFound: transformedProducts.length,
+        products: transformedProducts,
+        timestamp: new Date().toISOString()
+      });
+      
+      return transformedProducts;
     } catch (error: any) {
       // VERBOSE: Enhanced error logging
       logger.error("PgStorage.getUserProductsByUser - Failed to get user products by user", { 
