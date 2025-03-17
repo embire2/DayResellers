@@ -89,8 +89,8 @@ export class PgStorage implements IStorage {
         timestamp: new Date().toISOString()
       });
       
-      // CRITICAL DEBUG - Log query information
-      logger.warn("CRITICAL DEBUG - getUserProductsByUser executing query", {
+      // Always use direct SQL query for consistency
+      logger.debug("PgStorage.getUserProductsByUser - Using direct SQL query", {
         userId,
         queryText: 'SELECT * FROM user_products WHERE user_id = $1',
         parameters: [userId]
@@ -102,14 +102,13 @@ export class PgStorage implements IStorage {
         [userId]
       );
       
-      // CRITICAL DEBUG - Log raw database results
-      logger.warn("CRITICAL DEBUG - getUserProductsByUser raw DB results", {
+      // Log raw database results at debug level
+      logger.debug("PgStorage.getUserProductsByUser - Raw DB results", {
         userId,
-        rowCount: rows.length,
-        rawRows: JSON.stringify(rows)
+        rowCount: rows.length
       });
       
-      // Transform the results to match the expected schema format - camelCase to snake_case mapping
+      // Transform the results to match the expected schema format - snake_case to camelCase mapping
       const transformedProducts = rows.map(row => ({
         id: row.id,
         userId: row.user_id,
@@ -121,17 +120,16 @@ export class PgStorage implements IStorage {
         createdAt: row.created_at
       }));
       
-      // CRITICAL DEBUG - Log transformed results in detail
-      logger.warn("CRITICAL DEBUG - getUserProductsByUser transformed results", {
+      // Log transformed results at debug level
+      logger.debug("PgStorage.getUserProductsByUser - Transformed results", {
         userId,
-        transformedCount: transformedProducts.length,
-        transformedProducts: JSON.stringify(transformedProducts)
+        transformedCount: transformedProducts.length
       });
       
       // Return the transformed products
       return transformedProducts;
     } catch (error: any) {
-      // VERBOSE: Enhanced error logging
+      // Enhanced error logging
       logger.error("PgStorage.getUserProductsByUser - Failed to get user products by user", { 
         error,
         errorMessage: error.message || "Unknown error",
@@ -181,11 +179,57 @@ export class PgStorage implements IStorage {
 
   async updateUserProduct(id: number, data: Partial<UserProduct>): Promise<UserProduct | undefined> {
     try {
-      const updated = await db.update(schema.userProducts)
-        .set(data)
-        .where(eq(schema.userProducts.id, id))
-        .returning();
-      return updated.length > 0 ? updated[0] : undefined;
+      // Transform camelCase data keys to snake_case for SQL
+      const sqlData: Record<string, any> = {};
+      
+      if (data.userId !== undefined) sqlData.user_id = data.userId;
+      if (data.productId !== undefined) sqlData.product_id = data.productId;
+      if (data.username !== undefined) sqlData.username = data.username;
+      if (data.msisdn !== undefined) sqlData.msisdn = data.msisdn;
+      if (data.comments !== undefined) sqlData.comments = data.comments;
+      if (data.status !== undefined) sqlData.status = data.status;
+      
+      // Generate SET clause for SQL
+      const setClauses = Object.keys(sqlData).map(key => `${key} = $${Object.keys(sqlData).indexOf(key) + 2}`);
+      if (setClauses.length === 0) {
+        return await this.getUserProduct(id); // Nothing to update
+      }
+      
+      const setClause = setClauses.join(', ');
+      const values = Object.values(sqlData);
+      
+      // Construct and execute SQL query
+      const query = `
+        UPDATE user_products 
+        SET ${setClause}
+        WHERE id = $1
+        RETURNING *
+      `;
+      
+      logger.debug("PgStorage.updateUserProduct - Using direct SQL query", {
+        id,
+        setClause,
+        values: [id, ...values]
+      });
+      
+      const { rows } = await pool.query(query, [id, ...values]);
+      
+      if (rows.length === 0) {
+        return undefined;
+      }
+      
+      // Transform the result to match the expected schema format
+      const row = rows[0];
+      return {
+        id: row.id,
+        userId: row.user_id,
+        productId: row.product_id,
+        username: row.username,
+        msisdn: row.msisdn,
+        comments: row.comments,
+        status: row.status,
+        createdAt: row.created_at
+      };
     } catch (error) {
       logger.error("Failed to update user product", { error, id });
       throw error;
@@ -194,9 +238,18 @@ export class PgStorage implements IStorage {
 
   async deleteUserProduct(id: number): Promise<boolean> {
     try {
-      const result = await db.delete(schema.userProducts)
-        .where(eq(schema.userProducts.id, id));
-      return true;
+      // Use direct SQL query for consistency
+      logger.debug("PgStorage.deleteUserProduct - Using direct SQL query", {
+        id,
+        timestamp: new Date().toISOString()
+      });
+      
+      const { rowCount } = await pool.query(
+        'DELETE FROM user_products WHERE id = $1',
+        [id]
+      );
+      
+      return rowCount > 0;
     } catch (error) {
       logger.error("Failed to delete user product", { error, id });
       throw error;
