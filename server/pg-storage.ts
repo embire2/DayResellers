@@ -617,6 +617,19 @@ export class PgStorage implements IStorage {
       throw error;
     }
   }
+  
+  async getApiSetting(id: number): Promise<ApiSetting | undefined> {
+    try {
+      const settings = await db.select()
+        .from(schema.apiSettings)
+        .where(eq(schema.apiSettings.id, id));
+      
+      return settings.length > 0 ? settings[0] : undefined;
+    } catch (error) {
+      logger.error(`Error in getApiSetting(${id})`, {}, error as Error);
+      throw error;
+    }
+  }
 
   async updateApiSetting(id: number, data: Partial<ApiSetting>): Promise<ApiSetting | undefined> {
     try {

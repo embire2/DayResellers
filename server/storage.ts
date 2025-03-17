@@ -57,6 +57,7 @@ export interface IStorage {
   createApiSetting(setting: InsertApiSetting): Promise<ApiSetting>;
   getApiSettings(): Promise<ApiSetting[]>;
   getApiSettingsByMaster(masterCategory: string): Promise<ApiSetting[]>;
+  getApiSetting(id: number): Promise<ApiSetting | undefined>;
   updateApiSetting(id: number, data: Partial<ApiSetting>): Promise<ApiSetting | undefined>;
   
   // User Products operations
@@ -70,6 +71,7 @@ export interface IStorage {
   // User Product Endpoints operations
   createUserProductEndpoint(endpoint: InsertUserProductEndpoint): Promise<UserProductEndpoint>;
   getUserProductEndpoints(userProductId: number): Promise<UserProductEndpoint[]>;
+  getUserProductEndpoint(id: number): Promise<UserProductEndpoint | undefined>;
   updateUserProductEndpoint(id: number, data: Partial<UserProductEndpoint>): Promise<UserProductEndpoint | undefined>;
   deleteUserProductEndpoint(id: number): Promise<boolean>;
   
@@ -248,7 +250,8 @@ export class MemStorage implements IStorage {
         creditBalance: insertUser.creditBalance || '0',
         resellerGroup: typeof insertUser.resellerGroup === 'string' 
           ? parseInt(insertUser.resellerGroup, 10) 
-          : (insertUser.resellerGroup || 1)
+          : (insertUser.resellerGroup || 1),
+        paymentMode: insertUser.paymentMode || 'credit'
       };
       
       const id = this.userIdCounter++;
@@ -262,6 +265,7 @@ export class MemStorage implements IStorage {
         role: normalizedData.role,
         creditBalance: normalizedData.creditBalance,
         resellerGroup: normalizedData.resellerGroup,
+        paymentMode: normalizedData.paymentMode,
         dashboardConfig: null,
         createdAt: now
       };
@@ -486,6 +490,10 @@ export class MemStorage implements IStorage {
       (setting) => setting.masterCategory === masterCategory
     );
   }
+  
+  async getApiSetting(id: number): Promise<ApiSetting | undefined> {
+    return this.apiSettings.get(id);
+  }
 
   async updateApiSetting(id: number, data: Partial<ApiSetting>): Promise<ApiSetting | undefined> {
     const setting = this.apiSettings.get(id);
@@ -552,6 +560,7 @@ export class MemStorage implements IStorage {
       id,
       userProductId: endpoint.userProductId,
       apiSettingId: endpoint.apiSettingId,
+      endpointPath: endpoint.endpointPath,
       customParameters: endpoint.customParameters ?? null,
       createdAt: now
     };
@@ -564,6 +573,10 @@ export class MemStorage implements IStorage {
     return Array.from(this.userProductEndpoints.values()).filter(
       (endpoint) => endpoint.userProductId === userProductId
     );
+  }
+  
+  async getUserProductEndpoint(id: number): Promise<UserProductEndpoint | undefined> {
+    return this.userProductEndpoints.get(id);
   }
   
   async updateUserProductEndpoint(id: number, data: Partial<UserProductEndpoint>): Promise<UserProductEndpoint | undefined> {
