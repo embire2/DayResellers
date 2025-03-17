@@ -51,7 +51,10 @@ export default function UserProductsPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isAddEndpointDialogOpen, setIsAddEndpointDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isRunEndpointDialogOpen, setIsRunEndpointDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<UserProductWithDetails | null>(null);
+  const [selectedEndpoint, setSelectedEndpoint] = useState<UserProductEndpoint | null>(null);
+  const [selectedApiSettingName, setSelectedApiSettingName] = useState<string>('');
   const [formData, setFormData] = useState({
     productId: '',
     username: '',
@@ -367,6 +370,12 @@ export default function UserProductsPage() {
     deleteEndpointMutation.mutate(endpointId);
   };
   
+  const handleRunEndpoint = (endpoint: UserProductEndpoint, apiSettingName: string) => {
+    setSelectedEndpoint(endpoint);
+    setSelectedApiSettingName(apiSettingName);
+    setIsRunEndpointDialogOpen(true);
+  };
+  
   const handleUpdateUserProduct = (id: number, field: string, value: string) => {
     updateUserProductMutation.mutate({
       id,
@@ -477,6 +486,7 @@ export default function UserProductsPage() {
             onDelete={openDeleteDialog}
             onAddEndpoint={openAddEndpointDialog}
             onDeleteEndpoint={handleDeleteEndpoint}
+            onRunEndpoint={handleRunEndpoint}
             renderProductName={renderProductName}
             renderStatusBadge={renderStatusBadge}
             renderEndpointName={renderEndpointName}
@@ -491,6 +501,7 @@ export default function UserProductsPage() {
             onDelete={openDeleteDialog}
             onAddEndpoint={openAddEndpointDialog}
             onDeleteEndpoint={handleDeleteEndpoint}
+            onRunEndpoint={handleRunEndpoint}
             renderProductName={renderProductName}
             renderStatusBadge={renderStatusBadge}
             renderEndpointName={renderEndpointName}
@@ -505,6 +516,7 @@ export default function UserProductsPage() {
             onDelete={openDeleteDialog}
             onAddEndpoint={openAddEndpointDialog}
             onDeleteEndpoint={handleDeleteEndpoint}
+            onRunEndpoint={handleRunEndpoint}
             renderProductName={renderProductName}
             renderStatusBadge={renderStatusBadge}
             renderEndpointName={renderEndpointName}
@@ -725,6 +737,16 @@ export default function UserProductsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Run Endpoint Dialog */}
+      {selectedEndpoint && (
+        <RunEndpointDialog 
+          isOpen={isRunEndpointDialogOpen}
+          onClose={() => setIsRunEndpointDialogOpen(false)}
+          endpoint={selectedEndpoint}
+          apiSettingName={selectedApiSettingName}
+        />
+      )}
     </div>
   );
 }
@@ -748,6 +770,7 @@ function UserProductsList({
   onDelete,
   onAddEndpoint,
   onDeleteEndpoint,
+  onRunEndpoint,
   renderProductName,
   renderStatusBadge,
   renderEndpointName,
@@ -906,14 +929,26 @@ function UserProductsList({
                             )}
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-red-600 hover:text-red-800"
-                              onClick={() => onDeleteEndpoint(endpoint.id)}
-                            >
-                              <Trash className="h-4 w-4" />
-                            </Button>
+                            <div className="flex justify-end gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-blue-600 hover:text-blue-800"
+                                onClick={() => onRunEndpoint(endpoint, endpoint.apiSettingId ? renderEndpointName(endpoint.apiSettingId) : 'Unknown Endpoint')}
+                                title="Run endpoint"
+                              >
+                                <Play className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-red-600 hover:text-red-800"
+                                onClick={() => onDeleteEndpoint(endpoint.id)}
+                                title="Delete endpoint"
+                              >
+                                <Trash className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
