@@ -244,12 +244,12 @@ export class PgStorage implements IStorage {
         timestamp: new Date().toISOString()
       });
       
-      const { rowCount } = await pool.query(
+      const result = await pool.query(
         'DELETE FROM user_products WHERE id = $1',
         [id]
       );
       
-      return rowCount > 0;
+      return result.rowCount !== null && result.rowCount > 0;
     } catch (error) {
       logger.error("Failed to delete user product", { error, id });
       throw error;
