@@ -19,6 +19,7 @@ import AdminSettings from "@/pages/admin/settings";
 import Diagnostics from "@/pages/admin/diagnostics";
 import ManageUserProducts from "@/pages/admin/manage-user-products";
 import UserProductsPage from "@/pages/admin/user-products/[userId]";
+import PendingOrders from "@/pages/admin/pending-orders";
 
 // Reseller Pages
 import ResellerDashboard from "@/pages/reseller/dashboard";
@@ -27,6 +28,7 @@ import Products from "@/pages/reseller/products";
 import Billing from "@/pages/reseller/billing";
 import Settings from "@/pages/reseller/settings";
 import MyProducts from "@/pages/reseller/my-products";
+import MyOrders from "@/pages/reseller/my-orders";
 
 import "./theme.css";
 
@@ -48,12 +50,14 @@ function Router() {
       <ProtectedRoute path="/admin/diagnostics" component={Diagnostics} requiredRole="admin" />
       <ProtectedRoute path="/admin/user-products" component={ManageUserProducts} requiredRole="admin" />
       <ProtectedRoute path="/admin/user-products/:userId" component={UserProductsPage} requiredRole="admin" />
+      <ProtectedRoute path="/admin/pending-orders" component={PendingOrders} requiredRole="admin" />
 
       {/* Protected Reseller Routes */}
       <ProtectedRoute path="/reseller" component={ResellerDashboard} requiredRole="reseller" />
       <ProtectedRoute path="/reseller/clients" component={Clients} requiredRole="reseller" />
       <ProtectedRoute path="/reseller/products" component={Products} requiredRole="reseller" />
       <ProtectedRoute path="/reseller/my-products" component={MyProducts} requiredRole="reseller" />
+      <ProtectedRoute path="/reseller/my-orders" component={MyOrders} requiredRole="reseller" />
       <ProtectedRoute path="/reseller/billing" component={Billing} requiredRole="reseller" />
       <ProtectedRoute path="/reseller/settings" component={Settings} requiredRole="reseller" />
 
