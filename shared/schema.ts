@@ -85,6 +85,7 @@ export const userProducts = pgTable("user_products", {
   productId: integer("product_id").notNull(),
   username: text("username"), // Username for product/service
   msisdn: text("msisdn"), // MSISDN if applicable
+  simNumber: text("sim_number"), // SIM Serial Number
   comments: text("comments"),
   status: text("status").notNull().default("active"),
   createdAt: timestamp("created_at").defaultNow()
