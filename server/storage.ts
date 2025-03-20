@@ -361,6 +361,40 @@ export class MemStorage implements IStorage {
   async createProduct(product: InsertProduct): Promise<Product> {
     const id = this.productIdCounter++;
     const now = new Date();
+    
+    // Generate a random 3-digit API identifier
+    const generateApiIdentifier = (): string => {
+      // Generate a number between 100 and 999
+      return (Math.floor(Math.random() * 900) + 100).toString();
+    };
+
+    // Check if an API identifier already exists
+    const isApiIdentifierUnique = (identifier: string): boolean => {
+      for (const product of this.products.values()) {
+        if (product.apiIdentifier === identifier) {
+          return false;
+        }
+      }
+      return true;
+    };
+
+    // Generate a unique API identifier with retry logic
+    let apiIdentifier = generateApiIdentifier();
+    let isUnique = isApiIdentifierUnique(apiIdentifier);
+    let attempts = 1;
+    const maxAttempts = 10; // Avoid infinite loop
+    
+    // If the generated identifier is not unique, try again
+    while (!isUnique && attempts < maxAttempts) {
+      apiIdentifier = generateApiIdentifier();
+      isUnique = isApiIdentifierUnique(apiIdentifier);
+      attempts++;
+    }
+    
+    if (!isUnique) {
+      throw new Error('Failed to generate a unique API identifier after multiple attempts');
+    }
+    
     // Ensure we're handling nulls properly for the Product type
     const newProduct: Product = { 
       id, 
@@ -372,7 +406,8 @@ export class MemStorage implements IStorage {
       group1Price: product.group1Price,
       group2Price: product.group2Price,
       categoryId: product.categoryId,
-      apiEndpoint: product.apiEndpoint ?? null
+      apiEndpoint: product.apiEndpoint ?? null,
+      apiIdentifier: apiIdentifier
     };
     this.products.set(id, newProduct);
     return newProduct;

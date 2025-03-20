@@ -570,16 +570,41 @@ export class PgStorage implements IStorage {
   // Product operations
   async createProduct(product: InsertProduct): Promise<Product> {
     try {
-      // Generate a random 3-digit API identifier
+      // Function to generate a random 3-digit API identifier
       const generateApiIdentifier = (): string => {
         // Generate a number between 100 and 999
-        const randomNumber = Math.floor(Math.random() * 900) + 100;
-        return randomNumber.toString();
+        return (Math.floor(Math.random() * 900) + 100).toString();
       };
 
-      // Add API identifier to the product
-      const apiIdentifier = generateApiIdentifier();
+      // Function to check if an API identifier already exists
+      const isApiIdentifierUnique = async (identifier: string): Promise<boolean> => {
+        const existingProducts = await db.select()
+          .from(schema.products)
+          .where(eq(schema.products.apiIdentifier, identifier));
+        
+        return existingProducts.length === 0;
+      };
+
+      // Generate a unique API identifier with retry logic
+      let apiIdentifier = generateApiIdentifier();
+      let isUnique = await isApiIdentifierUnique(apiIdentifier);
+      let attempts = 1;
+      const maxAttempts = 10; // Avoid infinite loop
       
+      // If the generated identifier is not unique, try again
+      while (!isUnique && attempts < maxAttempts) {
+        apiIdentifier = generateApiIdentifier();
+        isUnique = await isApiIdentifierUnique(apiIdentifier);
+        attempts++;
+      }
+      
+      if (!isUnique) {
+        throw new Error('Failed to generate a unique API identifier after multiple attempts');
+      }
+      
+      logger.debug(`Generated unique API identifier: ${apiIdentifier} after ${attempts} attempt(s)`);
+      
+      // Insert the product with the unique API identifier
       const result = await db.insert(schema.products)
         .values({
           ...product,
