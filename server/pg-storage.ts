@@ -117,6 +117,7 @@ export class PgStorage implements IStorage {
         productId: row.product_id,
         username: row.username,
         msisdn: row.msisdn,
+        simNumber: row.sim_number,
         comments: row.comments,
         status: row.status,
         createdAt: row.created_at
