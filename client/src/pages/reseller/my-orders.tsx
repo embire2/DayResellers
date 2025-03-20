@@ -37,7 +37,7 @@ export default function MyOrders() {
 
   // Fetch orders for the current user
   const { data: orders, isLoading } = useQuery<OrderWithDetails[]>({
-    queryKey: ['/api/orders/reseller', user?.id],
+    queryKey: [`/api/orders/reseller/${user?.id}`],
     enabled: !!user?.id,
   });
 
