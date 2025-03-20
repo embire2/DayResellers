@@ -433,7 +433,7 @@ export default function Products() {
                         <FormItem>
                           <FormLabel>Country</FormLabel>
                           <FormControl>
-                            <Input disabled value="South Africa" {...field} />
+                            <Input defaultValue="South Africa" {...field} disabled />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

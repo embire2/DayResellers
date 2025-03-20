@@ -33,16 +33,15 @@ import { Loader2, CheckCircle, XCircle } from "lucide-react";
 // Schema for order action (approve/reject)
 const orderActionSchema = z.object({
   status: z.enum(['active', 'rejected']),
-  rejectionReason: z.string().optional().refine(
+  rejectionReason: z.string().optional().superRefine(
     (val, ctx) => {
-      if (ctx.data.status === 'rejected' && (!val || val.trim() === '')) {
-        return false;
+      if (ctx.parent.status === 'rejected' && (!val || val.trim() === '')) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Rejection reason is required when rejecting an order",
+          path: ['rejectionReason']
+        });
       }
-      return true;
-    },
-    {
-      message: "Rejection reason is required when rejecting an order",
-      path: ['rejectionReason']
     }
   ),
 });

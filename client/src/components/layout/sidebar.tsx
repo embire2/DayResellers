@@ -104,6 +104,18 @@ export function Sidebar() {
                   Dashboard Designer
                 </Link>
                 <Link 
+                  href="/admin/pending-orders"
+                  className={cn(
+                    "group flex items-center px-2 py-2 text-sm font-medium rounded-md text-neutral-darker hover:bg-neutral-lighter",
+                    isActive("/admin/pending-orders") && "sidebar-item active"
+                  )}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3 text-neutral-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                  </svg>
+                  Pending Orders
+                </Link>
+                <Link 
                   href="/admin/api-integration"
                   className={cn(
                     "group flex items-center px-2 py-2 text-sm font-medium rounded-md text-neutral-darker hover:bg-neutral-lighter",
@@ -234,6 +246,18 @@ export function Sidebar() {
                     <path d="M12 17h.01" />
                   </svg>
                   My Products
+                </Link>
+                <Link 
+                  href="/reseller/my-orders"
+                  className={cn(
+                    "group flex items-center px-2 py-2 text-sm font-medium rounded-md text-neutral-darker hover:bg-neutral-lighter",
+                    isActive("/reseller/my-orders") && "sidebar-item active"
+                  )}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3 text-neutral-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                  </svg>
+                  My Orders
                 </Link>
                 <Link 
                   href="/reseller/billing"
