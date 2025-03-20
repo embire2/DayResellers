@@ -529,6 +529,7 @@ export class MemStorage implements IStorage {
       productId: userProduct.productId,
       username: userProduct.username ?? null,
       msisdn: userProduct.msisdn ?? null,
+      simNumber: userProduct.simNumber ?? null,
       comments: userProduct.comments ?? null,
       status: userProduct.status ?? 'active',
       createdAt: now
@@ -717,7 +718,7 @@ export class MemStorage implements IStorage {
         productId: order.productId,
         status: 'active',
         // Transfer over SIM number if it exists
-        msisdn: order.simNumber,
+        simNumber: order.simNumber,
         comments: `Auto-created from order #${id}`
       });
     }

@@ -171,6 +171,7 @@ export class PgStorage implements IStorage {
         productId: row.product_id,
         username: row.username,
         msisdn: row.msisdn,
+        simNumber: row.sim_number,
         comments: row.comments,
         status: row.status,
         createdAt: row.created_at
@@ -190,6 +191,7 @@ export class PgStorage implements IStorage {
       if (data.productId !== undefined) sqlData.product_id = data.productId;
       if (data.username !== undefined) sqlData.username = data.username;
       if (data.msisdn !== undefined) sqlData.msisdn = data.msisdn;
+      if (data.simNumber !== undefined) sqlData.sim_number = data.simNumber;
       if (data.comments !== undefined) sqlData.comments = data.comments;
       if (data.status !== undefined) sqlData.status = data.status;
       
@@ -230,6 +232,7 @@ export class PgStorage implements IStorage {
         productId: row.product_id,
         username: row.username,
         msisdn: row.msisdn,
+        simNumber: row.sim_number,
         comments: row.comments,
         status: row.status,
         createdAt: row.created_at
