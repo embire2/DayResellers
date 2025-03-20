@@ -6,6 +6,8 @@ import { z } from "zod";
 export type MasterCategory = 'MTN Fixed' | 'MTN GSM';
 export type ProductStatus = 'active' | 'limited' | 'outofstock';
 export type UserProductStatus = 'active' | 'pending' | 'suspended' | 'cancelled';
+export type OrderStatus = 'pending' | 'active' | 'rejected';
+export type ProvisionMethod = 'courier' | 'self';
 
 // User model with roles
 export const users = pgTable("users", {
@@ -108,6 +110,23 @@ export const transactions = pgTable("transactions", {
   createdAt: timestamp("created_at").defaultNow()
 });
 
+// Product Orders
+export const productOrders = pgTable("product_orders", {
+  id: serial("id").primaryKey(),
+  resellerId: integer("reseller_id").notNull(),
+  clientId: integer("client_id").notNull(),
+  productId: integer("product_id").notNull(),
+  status: text("status").notNull().default("pending"), // pending, active, rejected
+  provisionMethod: text("provision_method").notNull(), // courier, self
+  simNumber: text("sim_number"), // For self-provision method
+  address: text("address"), // For courier method
+  contactName: text("contact_name"), // For courier method
+  contactPhone: text("contact_phone"), // For courier method
+  country: text("country").default("South Africa"), // For courier method
+  rejectionReason: text("rejection_reason"), // If status is 'rejected'
+  createdAt: timestamp("created_at").defaultNow()
+});
+
 // Schemas for inserting data
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true, dashboardConfig: true });
 export const insertProductCategorySchema = createInsertSchema(productCategories).omit({ id: true, createdAt: true });
@@ -118,6 +137,7 @@ export const insertApiSettingSchema = createInsertSchema(apiSettings).omit({ id:
 export const insertUserProductSchema = createInsertSchema(userProducts).omit({ id: true, createdAt: true });
 export const insertUserProductEndpointSchema = createInsertSchema(userProductEndpoints).omit({ id: true, createdAt: true });
 export const insertTransactionSchema = createInsertSchema(transactions).omit({ id: true, createdAt: true });
+export const insertProductOrderSchema = createInsertSchema(productOrders).omit({ id: true, createdAt: true });
 
 // Types for selections
 export type User = typeof users.$inferSelect;
@@ -129,6 +149,7 @@ export type ApiSetting = typeof apiSettings.$inferSelect;
 export type UserProduct = typeof userProducts.$inferSelect;
 export type UserProductEndpoint = typeof userProductEndpoints.$inferSelect;
 export type Transaction = typeof transactions.$inferSelect;
+export type ProductOrder = typeof productOrders.$inferSelect;
 
 // Types for inserts
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -140,3 +161,4 @@ export type InsertApiSetting = z.infer<typeof insertApiSettingSchema>;
 export type InsertUserProduct = z.infer<typeof insertUserProductSchema>;
 export type InsertUserProductEndpoint = z.infer<typeof insertUserProductEndpointSchema>;
 export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
+export type InsertProductOrder = z.infer<typeof insertProductOrderSchema>;
