@@ -44,6 +44,7 @@ export const products = pgTable("products", {
   categoryId: integer("category_id").notNull(),
   status: text("status").notNull().default("active"),
   apiEndpoint: text("api_endpoint"), // Endpoint for Broadband.is API
+  apiIdentifier: text("api_identifier"), // 3-digit code for API endpoint identification
   createdAt: timestamp("created_at").defaultNow()
 });
 
