@@ -90,13 +90,10 @@ export default function ProductsPricing() {
         ...data,
         categoryId: parseInt(data.categoryId),
       };
-      return apiRequest<Product>("/api/products", {
-        method: "POST",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formattedData)
-      });
+      const response = await apiRequest<Response>("POST", "/api/products", formattedData);
+      return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: (data: Product) => {
       queryClient.invalidateQueries({ queryKey: ['/api/products'] });
       setIsProductModalOpen(false);
       form.reset();
@@ -122,13 +119,10 @@ export default function ProductsPricing() {
         ...productData,
         categoryId: parseInt(productData.categoryId),
       };
-      return apiRequest<Product>(`/api/products/${id}`, {
-        method: "PUT",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formattedData)
-      });
+      const response = await apiRequest<Response>("PUT", `/api/products/${id}`, formattedData);
+      return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: (data: Product) => {
       queryClient.invalidateQueries({ queryKey: ['/api/products'] });
       setIsProductModalOpen(false);
       setIsEditingProduct(false);
