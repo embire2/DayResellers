@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { 
@@ -47,6 +47,27 @@ import { Search, Loader2 } from "lucide-react";
 const clientProductSchema = z.object({
   clientId: z.string().min(1, "Client is required"),
   productId: z.number(),
+  provisionMethod: z.enum(['courier', 'self']),
+  // Fields for courier delivery
+  address: z.string().optional(),
+  contactName: z.string().optional(),
+  contactPhone: z.string().optional(),
+  country: z.string().default('South Africa'),
+  // Field for self-provision
+  simNumber: z.string().optional(),
+}).refine(data => {
+  // If courier is selected, validate courier fields
+  if (data.provisionMethod === 'courier') {
+    return !!data.address && !!data.contactName && !!data.contactPhone;
+  }
+  // If self-provision is selected, validate simNumber
+  if (data.provisionMethod === 'self') {
+    return !!data.simNumber;
+  }
+  return false;
+}, {
+  message: "Please fill all required fields for the selected provision method",
+  path: ["provisionMethod"],
 });
 
 export default function Products() {
@@ -68,33 +89,67 @@ export default function Products() {
     queryKey: ['/api/clients'],
   });
 
+  const [provisionMethod, setProvisionMethod] = useState<'courier' | 'self' | null>(null);
+
   // Purchase product form
   const form = useForm<z.infer<typeof clientProductSchema>>({
     resolver: zodResolver(clientProductSchema),
     defaultValues: {
       clientId: "",
       productId: 0,
+      provisionMethod: 'courier',
+      address: '',
+      contactName: '',
+      contactPhone: '',
+      country: 'South Africa',
+      simNumber: '',
     },
   });
+
+  // Watch for provision method changes to conditionally show form fields
+  const watchProvisionMethod = form.watch('provisionMethod');
+  
+  // Set the provision method when it changes in the form
+  React.useEffect(() => {
+    if (watchProvisionMethod) {
+      setProvisionMethod(watchProvisionMethod);
+    }
+  }, [watchProvisionMethod]);
 
   // Purchase product mutation
   const purchaseProductMutation = useMutation({
     mutationFn: async (data: z.infer<typeof clientProductSchema>) => {
       const res = await apiRequest(
         "POST", 
-        `/api/clients/${data.clientId}/products`,
-        { productId: data.productId }
+        `/api/orders`,
+        { 
+          productId: data.productId,
+          clientId: parseInt(data.clientId),
+          provisionMethod: data.provisionMethod,
+          // Include provision method specific fields
+          ...(data.provisionMethod === 'courier' ? {
+            address: data.address,
+            contactName: data.contactName,
+            contactPhone: data.contactPhone,
+            country: data.country,
+          } : {
+            simNumber: data.simNumber
+          })
+        }
       );
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/clients'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/user'] }); // Refresh credit balance
+      queryClient.invalidateQueries({ queryKey: ['/api/user'] }); 
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       setIsPurchaseModalOpen(false);
       form.reset();
       toast({
-        title: "Product purchased",
-        description: "The product has been successfully assigned to the client",
+        title: "Order submitted",
+        description: user?.paymentMode === 'credit' 
+          ? "The product has been successfully purchased" 
+          : "Your order has been submitted and is pending approval",
       });
     },
     onError: (error: any) => {
@@ -298,6 +353,115 @@ export default function Products() {
                     </FormItem>
                   )}
                 />
+
+                <FormField
+                  control={form.control}
+                  name="provisionMethod"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Delivery Method</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select delivery method" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="courier">Courier Delivery</SelectItem>
+                          <SelectItem value="self">Self Provision</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Fields for Courier Delivery */}
+                {watchProvisionMethod === 'courier' && (
+                  <div className="space-y-4 border rounded-md p-4">
+                    <h3 className="text-sm font-medium mb-2">Courier Delivery Details</h3>
+                    
+                    <FormField
+                      control={form.control}
+                      name="address"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Delivery Address</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Delivery address" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="contactName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Contact Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Contact person name" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="contactPhone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Contact Phone</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Contact phone number" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="country"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Country</FormLabel>
+                          <FormControl>
+                            <Input disabled value="South Africa" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
+
+                {/* Fields for Self Provision */}
+                {watchProvisionMethod === 'self' && (
+                  <div className="space-y-4 border rounded-md p-4">
+                    <h3 className="text-sm font-medium mb-2">Self Provision Details</h3>
+                    
+                    <FormField
+                      control={form.control}
+                      name="simNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>SIM Serial Number</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter SIM serial number" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
 
                 <DialogFooter>
                   <Button

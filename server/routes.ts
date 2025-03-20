@@ -8,6 +8,7 @@ import { setupDiagnosticRoutes, recordDiagnosticError } from "./diagnostic-route
 import { logger } from "./logger";
 import userProductsRouter from "./api/user-products";
 import runEndpointRouter from "./api/run-endpoint";
+import { eq } from "drizzle-orm";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
@@ -801,6 +802,172 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   }, userProductsRouter);
   app.use('/api/run-endpoint', runEndpointRouter);
+
+  // Product Order Routes
+  app.get('/api/orders', async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const user = req.user as any;
+      let orders;
+
+      if (user.role === 'admin') {
+        orders = await storage.getProductOrdersWithDetails();
+      } else {
+        orders = await storage.getProductOrdersByReseller(user.id);
+      }
+
+      return res.json(orders);
+    } catch (error) {
+      recordDiagnosticError(req, error);
+      logger.error("Error fetching product orders", { userId: (req.user as any)?.id }, error as Error);
+      return res.status(500).json({ message: "Failed to fetch product orders" });
+    }
+  });
+
+  app.get('/api/orders/pending', async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const user = req.user as any;
+      if (user.role !== 'admin') {
+        return res.status(403).json({ message: "Not authorized" });
+      }
+
+      const pendingOrders = await storage.getPendingProductOrders();
+      return res.json(pendingOrders);
+    } catch (error) {
+      recordDiagnosticError(req, error);
+      logger.error("Error fetching pending orders", { userId: (req.user as any)?.id }, error as Error);
+      return res.status(500).json({ message: "Failed to fetch pending orders" });
+    }
+  });
+
+  app.get('/api/orders/:id', async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const orderId = parseInt(req.params.id);
+      if (isNaN(orderId)) {
+        return res.status(400).json({ message: "Invalid order ID" });
+      }
+
+      const order = await storage.getProductOrder(orderId);
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      const user = req.user as any;
+      // Only admin or the order owner can view the order
+      if (user.role !== 'admin' && order.resellerId !== user.id) {
+        return res.status(403).json({ message: "Not authorized to view this order" });
+      }
+
+      return res.json(order);
+    } catch (error) {
+      recordDiagnosticError(req, error);
+      logger.error("Error fetching order", { 
+        userId: (req.user as any)?.id, 
+        orderId: req.params.id 
+      }, error as Error);
+      return res.status(500).json({ message: "Failed to fetch order" });
+    }
+  });
+
+  app.post('/api/orders', async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const user = req.user as any;
+      
+      // Add the reseller ID from the authenticated user
+      const orderData = {
+        ...req.body,
+        resellerId: user.id,
+        status: 'pending' // All new orders start as pending
+      };
+
+      // Validate required fields
+      if (!orderData.productId || !orderData.clientId || !orderData.provisionMethod) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      // Validate provision method specific fields
+      if (orderData.provisionMethod === 'courier' && 
+          (!orderData.address || !orderData.contactName || !orderData.contactPhone)) {
+        return res.status(400).json({ 
+          message: "Courier provision method requires address, contact name, and contact phone" 
+        });
+      }
+
+      if (orderData.provisionMethod === 'self' && !orderData.simNumber) {
+        return res.status(400).json({ 
+          message: "Self provision method requires SIM serial number" 
+        });
+      }
+
+      // Create the order
+      const newOrder = await storage.createProductOrder(orderData);
+      return res.status(201).json(newOrder);
+    } catch (error) {
+      recordDiagnosticError(req, error, req.body);
+      logger.error("Error creating product order", { 
+        userId: (req.user as any)?.id, 
+        orderData: req.body 
+      }, error as Error);
+      return res.status(500).json({ message: "Failed to create product order" });
+    }
+  });
+
+  app.patch('/api/orders/:id', async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const orderId = parseInt(req.params.id);
+      if (isNaN(orderId)) {
+        return res.status(400).json({ message: "Invalid order ID" });
+      }
+
+      const order = await storage.getProductOrder(orderId);
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      const user = req.user as any;
+      
+      // Only admin can update order status
+      if (req.body.status && user.role !== 'admin') {
+        return res.status(403).json({ message: "Only admin can update order status" });
+      }
+
+      // For rejection, require a reason
+      if (req.body.status === 'rejected' && !req.body.rejectionReason) {
+        return res.status(400).json({ message: "Rejection reason is required" });
+      }
+
+      // Update the order
+      const updatedOrder = await storage.updateProductOrder(orderId, req.body);
+      return res.json(updatedOrder);
+    } catch (error) {
+      recordDiagnosticError(req, error, req.body);
+      logger.error("Error updating product order", { 
+        userId: (req.user as any)?.id, 
+        orderId: req.params.id,
+        updateData: req.body
+      }, error as Error);
+      return res.status(500).json({ message: "Failed to update product order" });
+    }
+  });
 
   const httpServer = createServer(app);
 
