@@ -209,6 +209,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update user
+  app.put("/api/users/:id", async (req, res) => {
+    try {
+      if (!req.isAuthenticated() || req.user?.role !== "admin") {
+        return res.status(403).json({ message: "Not authorized" });
+      }
+
+      const userId = parseInt(req.params.id);
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+
+      // Check if user exists
+      const existingUser = await storage.getUser(userId);
+      if (!existingUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // If updating username, check if the new username already exists (unless it's the same user)
+      if (req.body.username && req.body.username !== existingUser.username) {
+        const userWithSameUsername = await storage.getUserByUsername(req.body.username);
+        if (userWithSameUsername && userWithSameUsername.id !== userId) {
+          return res.status(400).json({ message: "Username already exists" });
+        }
+      }
+
+      // Update the user
+      logger.info(`Admin updating user with ID: ${userId}`, {
+        requestId: req.id,
+        adminId: req.user.id,
+        userId: userId,
+        updates: { ...req.body, password: req.body.password ? "[REDACTED]" : undefined }
+      });
+
+      const updatedUser = await storage.updateUser(userId, req.body);
+      if (!updatedUser) {
+        return res.status(500).json({ message: "Failed to update user" });
+      }
+
+      // Remove password from response
+      const { password, ...userWithoutPassword } = updatedUser;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      logger.error(`Failed to update user`, {
+        requestId: req.id,
+        userId: req.user?.id,
+        targetUserId: req.params.id
+      }, error as Error);
+      
+      res.status(500).json({ message: "Failed to update user" });
+    }
+  });
+
   // Update user credit balance
   app.post("/api/users/:id/credit", async (req, res) => {
     try {
