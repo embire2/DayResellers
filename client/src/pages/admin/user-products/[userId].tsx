@@ -59,6 +59,7 @@ export default function UserProductsPage() {
     productId: '',
     username: '',
     msisdn: '',
+    simNumber: '',
     status: 'pending',
     comments: ''
   });
@@ -138,6 +139,7 @@ export default function UserProductsPage() {
         productId: parseInt(data.productId),
         username: data.username || null,
         msisdn: data.msisdn || null,
+        simNumber: data.simNumber || null,
         status: data.status,
         comments: data.comments || null
       };
@@ -314,6 +316,7 @@ export default function UserProductsPage() {
       productId: '',
       username: '',
       msisdn: '',
+      simNumber: '',
       status: 'pending',
       comments: ''
     });
@@ -596,6 +599,19 @@ export default function UserProductsPage() {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="simNumber" className="text-right">
+                SIM Serial Number
+              </Label>
+              <Input
+                id="simNumber"
+                name="simNumber"
+                value={formData.simNumber}
+                onChange={handleInputChange}
+                className="col-span-3"
+                placeholder="SIM card serial number (optional)"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="status" className="text-right">
                 Status
               </Label>
@@ -838,6 +854,19 @@ function UserProductsList({
                     />
                   ) : (
                     <span>{product.msisdn || 'N/A'}</span>
+                  )}
+                </div>
+                <div className="flex items-center">
+                  <span className="w-24 text-xs font-medium">SIM Serial:</span>
+                  {onUpdateField ? (
+                    <EditableField
+                      value={product.simNumber || 'N/A'}
+                      onSave={(value) => onUpdateField(product.id, 'simNumber', value)}
+                      placeholder="Enter SIM Serial Number"
+                      validate={(value) => ({ isValid: true })}
+                    />
+                  ) : (
+                    <span>{product.simNumber || 'N/A'}</span>
                   )}
                 </div>
               </CardDescription>
