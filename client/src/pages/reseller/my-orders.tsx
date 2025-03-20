@@ -25,10 +25,19 @@ type OrderWithDetails = {
     id: number;
     name: string;
     basePrice: string;
+    description?: string;
+    categoryId?: number;
   };
   client?: {
     id: number;
     name: string;
+    email?: string;
+    phone?: string;
+  };
+  category?: {
+    id: number;
+    name: string;
+    masterCategory: string;
   };
 };
 
@@ -57,6 +66,65 @@ export default function MyOrders() {
         </div>
       );
     }
+  };
+  
+  // Shared function to render order details consistently
+  const renderOrderDetails = (order: OrderWithDetails) => {
+    return (
+      <div className="space-y-2">
+        <div className="flex justify-between items-center">
+          <span className="text-neutral-dark">Order #:</span>
+          <span>{order.id}</span>
+        </div>
+        {order.product && (
+          <>
+            <div className="flex justify-between items-center">
+              <span className="text-neutral-dark">Product:</span>
+              <span>{order.product.name}</span>
+            </div>
+            {order.product.description && (
+              <div className="flex justify-between items-center">
+                <span className="text-neutral-dark">Description:</span>
+                <span>{order.product.description}</span>
+              </div>
+            )}
+            <div className="flex justify-between items-center">
+              <span className="text-neutral-dark">Price:</span>
+              <span>{formatCurrency(parseFloat(order.product.basePrice))}</span>
+            </div>
+          </>
+        )}
+        {order.category && (
+          <div className="flex justify-between items-center">
+            <span className="text-neutral-dark">Category:</span>
+            <span>
+              {order.category.name} 
+              <span className="text-xs text-neutral ml-1">
+                ({order.category.masterCategory})
+              </span>
+            </span>
+          </div>
+        )}
+        <div className="flex justify-between items-center">
+          <span className="text-neutral-dark">Client:</span>
+          <span>{order.client?.name || 'Unknown Client'}</span>
+        </div>
+        {order.client?.phone && (
+          <div className="flex justify-between items-center">
+            <span className="text-neutral-dark">Client Phone:</span>
+            <span>{order.client.phone}</span>
+          </div>
+        )}
+        <div className="flex justify-between items-center">
+          <span className="text-neutral-dark">Date:</span>
+          <span>{formatDate(new Date(order.createdAt))}</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-neutral-dark">Provision Method:</span>
+          <span className="capitalize">{order.provisionMethod}</span>
+        </div>
+      </div>
+    );
   };
 
   const renderStatusBadge = (status: string) => {
@@ -140,31 +208,7 @@ export default function MyOrders() {
                         </div>
                       </CardHeader>
                       <CardContent className="pt-4">
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center">
-                            <span className="text-neutral-dark">Order #:</span>
-                            <span>{order.id}</span>
-                          </div>
-                          {order.product && (
-                            <div className="flex justify-between items-center">
-                              <span className="text-neutral-dark">Price:</span>
-                              <span>{formatCurrency(parseFloat(order.product.basePrice))}</span>
-                            </div>
-                          )}
-                          <div className="flex justify-between items-center">
-                            <span className="text-neutral-dark">Client:</span>
-                            <span>{order.client?.name}</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-neutral-dark">Date:</span>
-                            <span>{formatDate(new Date(order.createdAt))}</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-neutral-dark">Provision Method:</span>
-                            <span className="capitalize">{order.provisionMethod}</span>
-                          </div>
-                        </div>
-
+                        {renderOrderDetails(order)}
                         {renderProvisionDetails(order)}
                         
                         <div className="flex justify-between mt-4">
@@ -198,31 +242,7 @@ export default function MyOrders() {
                         </div>
                       </CardHeader>
                       <CardContent className="pt-4">
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center">
-                            <span className="text-neutral-dark">Order #:</span>
-                            <span>{order.id}</span>
-                          </div>
-                          {order.product && (
-                            <div className="flex justify-between items-center">
-                              <span className="text-neutral-dark">Price:</span>
-                              <span>{formatCurrency(parseFloat(order.product.basePrice))}</span>
-                            </div>
-                          )}
-                          <div className="flex justify-between items-center">
-                            <span className="text-neutral-dark">Client:</span>
-                            <span>{order.client?.name}</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-neutral-dark">Date:</span>
-                            <span>{formatDate(new Date(order.createdAt))}</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-neutral-dark">Provision Method:</span>
-                            <span className="capitalize">{order.provisionMethod}</span>
-                          </div>
-                        </div>
-
+                        {renderOrderDetails(order)}
                         {renderProvisionDetails(order)}
                       </CardContent>
                     </Card>
@@ -250,31 +270,7 @@ export default function MyOrders() {
                         </div>
                       </CardHeader>
                       <CardContent className="pt-4">
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center">
-                            <span className="text-neutral-dark">Order #:</span>
-                            <span>{order.id}</span>
-                          </div>
-                          {order.product && (
-                            <div className="flex justify-between items-center">
-                              <span className="text-neutral-dark">Price:</span>
-                              <span>{formatCurrency(parseFloat(order.product.basePrice))}</span>
-                            </div>
-                          )}
-                          <div className="flex justify-between items-center">
-                            <span className="text-neutral-dark">Client:</span>
-                            <span>{order.client?.name}</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-neutral-dark">Date:</span>
-                            <span>{formatDate(new Date(order.createdAt))}</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-neutral-dark">Provision Method:</span>
-                            <span className="capitalize">{order.provisionMethod}</span>
-                          </div>
-                        </div>
-
+                        {renderOrderDetails(order)}
                         {renderProvisionDetails(order)}
                         
                         {order.rejectionReason && (

@@ -947,11 +947,46 @@ export class PgStorage implements IStorage {
     }
   }
   
-  async getProductOrdersByReseller(resellerId: number): Promise<ProductOrder[]> {
+  async getProductOrdersByReseller(resellerId: number): Promise<any[]> {
     try {
-      return await db.select()
+      const orders = await db.select()
         .from(schema.productOrders)
         .where(eq(schema.productOrders.resellerId, resellerId));
+        
+      // Enhance orders with product and client details
+      const enhancedOrders = [];
+      
+      for (const order of orders) {
+        // Get product details
+        const product = order.productId ? 
+          await this.getProduct(order.productId) : undefined;
+          
+        // Get client details
+        const client = order.clientId ? 
+          await this.getClient(order.clientId) : undefined;
+          
+        // Get product category if product exists
+        let category = undefined;
+        if (product && product.categoryId) {
+          const productCategory = await db.select()
+            .from(schema.productCategories)
+            .where(eq(schema.productCategories.id, product.categoryId))
+            .limit(1);
+          
+          if (productCategory.length > 0) {
+            category = productCategory[0];
+          }
+        }
+        
+        enhancedOrders.push({
+          ...order,
+          product,
+          client,
+          category
+        });
+      }
+      
+      return enhancedOrders;
     } catch (error) {
       logger.error("Failed to get product orders by reseller", { error, resellerId });
       throw error;
