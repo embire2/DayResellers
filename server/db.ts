@@ -143,6 +143,46 @@ export async function runMigrations() {
           type TEXT NOT NULL,
           created_at TIMESTAMP DEFAULT NOW()
         )`,
+
+        // User Products table
+        `CREATE TABLE IF NOT EXISTS user_products (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER NOT NULL,
+          product_id INTEGER NOT NULL,
+          username TEXT,
+          msisdn TEXT,
+          sim_number TEXT,
+          comments TEXT,
+          status TEXT NOT NULL DEFAULT 'active',
+          created_at TIMESTAMP DEFAULT NOW()
+        )`,
+
+        // User Product Endpoints table
+        `CREATE TABLE IF NOT EXISTS user_product_endpoints (
+          id SERIAL PRIMARY KEY,
+          user_product_id INTEGER NOT NULL,
+          api_setting_id INTEGER NOT NULL,
+          endpoint_path TEXT NOT NULL,
+          custom_parameters JSONB,
+          created_at TIMESTAMP DEFAULT NOW()
+        )`,
+
+        // Product Orders table
+        `CREATE TABLE IF NOT EXISTS product_orders (
+          id SERIAL PRIMARY KEY,
+          reseller_id INTEGER NOT NULL,
+          client_id INTEGER NOT NULL,
+          product_id INTEGER NOT NULL,
+          status TEXT NOT NULL DEFAULT 'pending',
+          provision_method TEXT NOT NULL,
+          sim_number TEXT,
+          address TEXT,
+          contact_name TEXT,
+          contact_phone TEXT,
+          country TEXT DEFAULT 'South Africa',
+          rejection_reason TEXT,
+          created_at TIMESTAMP DEFAULT NOW()
+        )`,
         
         // Sessions table for authentication
         `CREATE TABLE IF NOT EXISTS sessions (
