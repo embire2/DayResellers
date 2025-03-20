@@ -570,9 +570,20 @@ export class PgStorage implements IStorage {
   // Product operations
   async createProduct(product: InsertProduct): Promise<Product> {
     try {
+      // Generate a random 3-digit API identifier
+      const generateApiIdentifier = (): string => {
+        // Generate a number between 100 and 999
+        const randomNumber = Math.floor(Math.random() * 900) + 100;
+        return randomNumber.toString();
+      };
+
+      // Add API identifier to the product
+      const apiIdentifier = generateApiIdentifier();
+      
       const result = await db.insert(schema.products)
         .values({
           ...product,
+          apiIdentifier,
           createdAt: new Date()
         })
         .returning();
