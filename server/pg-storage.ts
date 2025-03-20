@@ -1019,8 +1019,16 @@ export class PgStorage implements IStorage {
           productId: order.productId,
           status: 'active',
           // Transfer over SIM number if it exists
-          msisdn: order.simNumber,
+          simNumber: order.simNumber,
           comments: `Auto-created from order #${id}`
+        });
+        
+        // Log for debugging
+        logger.debug("PgStorage.updateProductOrder - Created user product from order", {
+          orderId: id,
+          userId: order.resellerId,
+          productId: order.productId,
+          simNumber: order.simNumber
         });
       }
       
