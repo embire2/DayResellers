@@ -827,6 +827,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/orders/reseller/:id', async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const resellerId = parseInt(req.params.id);
+      if (isNaN(resellerId)) {
+        return res.status(400).json({ message: "Invalid reseller ID" });
+      }
+
+      const user = req.user as any;
+      // Only allow admins or the reseller themselves to view their orders
+      if (user.role !== 'admin' && user.id !== resellerId) {
+        return res.status(403).json({ message: "Not authorized" });
+      }
+
+      const orders = await storage.getProductOrdersByReseller(resellerId);
+      return res.json(orders);
+    } catch (error) {
+      recordDiagnosticError(req, error);
+      logger.error("Error fetching reseller orders", { userId: (req.user as any)?.id, resellerId: req.params.id }, error as Error);
+      return res.status(500).json({ message: "Failed to fetch reseller orders" });
+    }
+  });
+
   app.get('/api/orders/pending', async (req, res) => {
     try {
       if (!req.isAuthenticated()) {
