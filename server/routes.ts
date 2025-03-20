@@ -600,34 +600,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Product not found" });
       }
       
-      // For resellers, check credit balance
+      // For resellers, handle based on payment mode
       if (req.user?.role === "reseller") {
         const user = await storage.getUser(req.user.id);
         if (!user) {
           return res.status(500).json({ message: "User not found" });
         }
         
-        const userBalance = parseFloat(user.creditBalance?.toString() || "0");
         const productPrice = getPriceByResellerGroup(product, user.resellerGroup || 1);
         
         // Apply pro-rata pricing based on the current date
         const { finalPrice } = calculateProRataPrice(productPrice, new Date());
         
-        if (userBalance < finalPrice) {
-          return res.status(400).json({ 
-            message: "Insufficient credit balance",
-            required: finalPrice,
-            available: userBalance
+        // Check credit balance only for users with credit payment mode
+        if (user.paymentMode === 'credit') {
+          const userBalance = parseFloat(user.creditBalance?.toString() || "0");
+          
+          if (userBalance < finalPrice) {
+            return res.status(400).json({ 
+              message: "Insufficient credit balance",
+              required: finalPrice,
+              available: userBalance
+            });
+          }
+          
+          // Deduct credit and create transaction for credit users
+          await storage.createTransaction({
+            userId: user.id,
+            amount: finalPrice.toString(),
+            description: `Purchase of ${product.name} for client ${client.name}`,
+            type: "debit"
           });
         }
-        
-        // Deduct credit and create transaction
-        await storage.createTransaction({
-          userId: user.id,
-          amount: finalPrice.toString(),
-          description: `Purchase of ${product.name} for client ${client.name}`,
-          type: "debit"
-        });
+        // For debit order users, we just record the transaction without checking balance
+        else if (user.paymentMode === 'debit') {
+          // Record the transaction for accounting purposes
+          await storage.createTransaction({
+            userId: user.id,
+            amount: finalPrice.toString(),
+            description: `Debit order - ${product.name} for client ${client.name}`,
+            type: "debit"
+          });
+          
+          logger.info(`Debit order product purchase`, {
+            userId: user.id,
+            username: user.username,
+            productId: product.id,
+            productName: product.name,
+            clientId: client.id,
+            clientName: client.name,
+            amount: finalPrice
+          });
+        }
       }
       
       const clientProduct = await storage.createClientProduct({
