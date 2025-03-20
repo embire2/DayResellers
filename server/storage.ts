@@ -7,7 +7,8 @@ import {
   apiSettings, type ApiSetting, type InsertApiSetting,
   userProducts, type UserProduct, type InsertUserProduct,
   userProductEndpoints, type UserProductEndpoint, type InsertUserProductEndpoint,
-  transactions, type Transaction, type InsertTransaction
+  transactions, type Transaction, type InsertTransaction,
+  productOrders, type ProductOrder, type InsertProductOrder
 } from "@shared/schema";
 import { DashboardConfig } from "@shared/types";
 import session, { Store } from "express-session";
@@ -80,6 +81,15 @@ export interface IStorage {
   getTransactionsByUser(userId: number): Promise<Transaction[]>;
   getRecentTransactions(limit: number): Promise<Transaction[]>;
   
+  // Product Orders operations
+  createProductOrder(order: InsertProductOrder): Promise<ProductOrder>;
+  getProductOrders(): Promise<ProductOrder[]>;
+  getProductOrdersByReseller(resellerId: number): Promise<ProductOrder[]>;
+  getProductOrder(id: number): Promise<ProductOrder | undefined>;
+  updateProductOrder(id: number, data: Partial<ProductOrder>): Promise<ProductOrder | undefined>;
+  getPendingProductOrders(): Promise<ProductOrder[]>;
+  getProductOrdersWithDetails(): Promise<any[]>; // Returns orders with product, client, and reseller details
+  
   // Session store for authentication
   sessionStore: session.Store;
 }
@@ -94,6 +104,7 @@ export class MemStorage implements IStorage {
   private userProducts: Map<number, UserProduct>;
   private userProductEndpoints: Map<number, UserProductEndpoint>;
   private transactions: Map<number, Transaction>;
+  private productOrders: Map<number, ProductOrder>;
 
   // Session store
   sessionStore: session.Store;
@@ -107,6 +118,7 @@ export class MemStorage implements IStorage {
   private userProductIdCounter: number;
   private userProductEndpointIdCounter: number;
   private transactionIdCounter: number;
+  private productOrderIdCounter: number;
 
   constructor() {
     this.users = new Map();
@@ -118,6 +130,7 @@ export class MemStorage implements IStorage {
     this.userProducts = new Map();
     this.userProductEndpoints = new Map();
     this.transactions = new Map();
+    this.productOrders = new Map();
 
     this.userIdCounter = 1;
     this.productCategoryIdCounter = 1;
@@ -128,6 +141,7 @@ export class MemStorage implements IStorage {
     this.userProductIdCounter = 1;
     this.userProductEndpointIdCounter = 1;
     this.transactionIdCounter = 1;
+    this.productOrderIdCounter = 1;
 
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000 // prune expired entries every 24h
