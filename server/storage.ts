@@ -665,6 +665,105 @@ export class MemStorage implements IStorage {
       })
       .slice(0, limit);
   }
+  
+  // Product Orders operations
+  async createProductOrder(order: InsertProductOrder): Promise<ProductOrder> {
+    const id = this.productOrderIdCounter++;
+    const now = new Date();
+    
+    const newOrder: ProductOrder = {
+      id,
+      resellerId: order.resellerId,
+      clientId: order.clientId,
+      productId: order.productId,
+      status: order.status ?? 'pending',
+      provisionMethod: order.provisionMethod,
+      simNumber: order.simNumber ?? null,
+      address: order.address ?? null,
+      contactName: order.contactName ?? null,
+      contactPhone: order.contactPhone ?? null,
+      country: order.country ?? 'South Africa',
+      rejectionReason: order.rejectionReason ?? null,
+      createdAt: now
+    };
+    
+    this.productOrders.set(id, newOrder);
+    return newOrder;
+  }
+  
+  async getProductOrders(): Promise<ProductOrder[]> {
+    return Array.from(this.productOrders.values());
+  }
+  
+  async getProductOrdersByReseller(resellerId: number): Promise<ProductOrder[]> {
+    return Array.from(this.productOrders.values()).filter(
+      (order) => order.resellerId === resellerId
+    );
+  }
+  
+  async getProductOrder(id: number): Promise<ProductOrder | undefined> {
+    return this.productOrders.get(id);
+  }
+  
+  async updateProductOrder(id: number, data: Partial<ProductOrder>): Promise<ProductOrder | undefined> {
+    const order = this.productOrders.get(id);
+    if (!order) return undefined;
+    
+    // If order status is changing to 'active', create a user product automatically
+    if (data.status === 'active' && order.status !== 'active') {
+      // Create a user product entry for the approved order
+      await this.createUserProduct({
+        userId: order.resellerId,
+        productId: order.productId,
+        status: 'active',
+        // Transfer over SIM number if it exists
+        msisdn: order.simNumber,
+        comments: `Auto-created from order #${id}`
+      });
+    }
+    
+    const updatedOrder = { ...order, ...data };
+    this.productOrders.set(id, updatedOrder);
+    return updatedOrder;
+  }
+  
+  async getPendingProductOrders(): Promise<ProductOrder[]> {
+    return Array.from(this.productOrders.values()).filter(
+      (order) => order.status === 'pending'
+    );
+  }
+  
+  async getProductOrdersWithDetails(): Promise<any[]> {
+    const orders = await this.getProductOrders();
+    const result = [];
+    
+    for (const order of orders) {
+      const product = await this.getProduct(order.productId);
+      const client = await this.getClient(order.clientId);
+      const reseller = await this.getUser(order.resellerId);
+      
+      if (product && client && reseller) {
+        result.push({
+          ...order,
+          product: {
+            id: product.id,
+            name: product.name,
+            basePrice: product.basePrice
+          },
+          client: {
+            id: client.id,
+            name: client.name
+          },
+          reseller: {
+            id: reseller.id,
+            username: reseller.username
+          }
+        });
+      }
+    }
+    
+    return result;
+  }
 }
 
 export const storage = new MemStorage();

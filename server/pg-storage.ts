@@ -13,7 +13,8 @@ import {
   InsertUser, InsertProductCategory, InsertProduct,
   InsertClient, InsertClientProduct, InsertApiSetting,
   InsertTransaction, UserProduct, InsertUserProduct,
-  UserProductEndpoint, InsertUserProductEndpoint
+  UserProductEndpoint, InsertUserProductEndpoint,
+  ProductOrder, InsertProductOrder
 } from "../shared/schema";
 import { DashboardConfig } from "../shared/types";
 import { logger } from "./logger";
@@ -897,6 +898,160 @@ export class PgStorage implements IStorage {
         .limit(limit);
     } catch (error) {
       logger.error(`Error in getRecentTransactions(${limit})`, {}, error as Error);
+      throw error;
+    }
+  }
+
+  // Product Orders operations
+  async createProductOrder(order: InsertProductOrder): Promise<ProductOrder> {
+    try {
+      logger.debug("PgStorage.createProductOrder - Beginning creation", {
+        orderData: order,
+        timestamp: new Date().toISOString()
+      });
+      
+      const result = await db.insert(schema.productOrders).values(order).returning();
+      
+      logger.debug("PgStorage.createProductOrder - Operation completed", {
+        success: result.length > 0,
+        resultCount: result.length,
+        createdOrder: result.length > 0 ? result[0] : null,
+        timestamp: new Date().toISOString()
+      });
+      
+      if (!result || result.length === 0) {
+        throw new Error("Product order was not created - database returned empty result");
+      }
+      
+      return result[0];
+    } catch (error: any) {
+      logger.error("PgStorage.createProductOrder - Failed to create product order", { 
+        error,
+        errorMessage: error.message || "Unknown error",
+        errorCode: error.code,
+        errorDetail: error.detail,
+        errorConstraint: error.constraint,
+        orderData: order,
+        timestamp: new Date().toISOString()
+      });
+      throw error;
+    }
+  }
+  
+  async getProductOrders(): Promise<ProductOrder[]> {
+    try {
+      return await db.select().from(schema.productOrders);
+    } catch (error) {
+      logger.error("Failed to get product orders", { error });
+      throw error;
+    }
+  }
+  
+  async getProductOrdersByReseller(resellerId: number): Promise<ProductOrder[]> {
+    try {
+      return await db.select()
+        .from(schema.productOrders)
+        .where(eq(schema.productOrders.resellerId, resellerId));
+    } catch (error) {
+      logger.error("Failed to get product orders by reseller", { error, resellerId });
+      throw error;
+    }
+  }
+  
+  async getProductOrder(id: number): Promise<ProductOrder | undefined> {
+    try {
+      const result = await db.select().from(schema.productOrders)
+        .where(eq(schema.productOrders.id, id));
+      return result.length > 0 ? result[0] : undefined;
+    } catch (error) {
+      logger.error("Failed to get product order by ID", { error, id });
+      throw error;
+    }
+  }
+  
+  async updateProductOrder(id: number, data: Partial<ProductOrder>): Promise<ProductOrder | undefined> {
+    try {
+      // If order status is changing to 'active', create a user product automatically
+      const order = await this.getProductOrder(id);
+      if (order && data.status === 'active' && order.status !== 'active') {
+        // Create a user product entry for the approved order
+        await this.createUserProduct({
+          userId: order.resellerId,
+          productId: order.productId,
+          status: 'active',
+          // Transfer over SIM number if it exists
+          msisdn: order.simNumber,
+          comments: `Auto-created from order #${id}`
+        });
+      }
+      
+      const updated = await db.update(schema.productOrders)
+        .set(data)
+        .where(eq(schema.productOrders.id, id))
+        .returning();
+      return updated.length > 0 ? updated[0] : undefined;
+    } catch (error) {
+      logger.error("Failed to update product order", { error, id });
+      throw error;
+    }
+  }
+  
+  async getPendingProductOrders(): Promise<ProductOrder[]> {
+    try {
+      return await db.select()
+        .from(schema.productOrders)
+        .where(eq(schema.productOrders.status, 'pending'));
+    } catch (error) {
+      logger.error("Failed to get pending product orders", { error });
+      throw error;
+    }
+  }
+  
+  async getProductOrdersWithDetails(): Promise<any[]> {
+    try {
+      // Use direct SQL for a more efficient JOIN query
+      const { rows } = await pool.query(`
+        SELECT o.*, 
+               p.id as product_id, p.name as product_name, p.base_price,
+               c.id as client_id, c.name as client_name,
+               u.id as reseller_id, u.username as reseller_username
+        FROM product_orders o
+        JOIN products p ON o.product_id = p.id
+        JOIN clients c ON o.client_id = c.id
+        JOIN users u ON o.reseller_id = u.id
+      `);
+      
+      // Transform the results to match the expected output structure
+      return rows.map(row => ({
+        id: row.id,
+        resellerId: row.reseller_id,
+        clientId: row.client_id,
+        productId: row.product_id,
+        status: row.status,
+        provisionMethod: row.provision_method,
+        simNumber: row.sim_number,
+        address: row.address,
+        contactName: row.contact_name,
+        contactPhone: row.contact_phone,
+        country: row.country,
+        rejectionReason: row.rejection_reason,
+        createdAt: row.created_at,
+        product: {
+          id: row.product_id,
+          name: row.product_name,
+          basePrice: row.base_price
+        },
+        client: {
+          id: row.client_id,
+          name: row.client_name
+        },
+        reseller: {
+          id: row.reseller_id,
+          username: row.reseller_username
+        }
+      }));
+    } catch (error) {
+      logger.error("Failed to get product orders with details", { error });
       throw error;
     }
   }
