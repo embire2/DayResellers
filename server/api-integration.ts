@@ -6,8 +6,9 @@ import { BroadbandApiResponse } from '@shared/types';
 // Define API credentials
 const MTN_FIXED_USERNAME = process.env.MTN_FIXED_USERNAME || 'api@openweb.email';
 const MTN_GSM_USERNAME = process.env.MTN_GSM_USERNAME || 'api@openweb.email.gsm';
-const API_PASSWORD = process.env.API_PASSWORD || 'fsV4iYUx0M';
-const BROADBAND_API_BASE_URL = 'https://www-lab.broadband.is/~lte/api';
+const MTN_FIXED_PASSWORD = process.env.MTN_FIXED_PASSWORD || 'fsV4iYUx0M';
+const MTN_GSM_PASSWORD = process.env.MTN_GSM_PASSWORD || 'fsV4iYUx0M';
+const BROADBAND_API_BASE_URL = 'https://www.broadband.is/api';
 
 interface APICredentials {
   username: string;
@@ -18,7 +19,7 @@ interface APICredentials {
 const getCredentials = (masterCategory: string): APICredentials => {
   return {
     username: masterCategory === 'MTN GSM' ? MTN_GSM_USERNAME : MTN_FIXED_USERNAME,
-    password: API_PASSWORD
+    password: masterCategory === 'MTN GSM' ? MTN_GSM_PASSWORD : MTN_FIXED_PASSWORD
   };
 };
 
