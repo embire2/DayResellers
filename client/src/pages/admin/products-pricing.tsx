@@ -19,6 +19,7 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -395,7 +396,7 @@ export default function ProductsPricing() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <FormField
                     control={form.control}
                     name="categoryId"
@@ -458,6 +459,18 @@ export default function ProductsPricing() {
                       </FormItem>
                     )}
                   />
+
+                  {isEditingProduct && selectedProduct?.apiIdentifier && (
+                    <FormItem>
+                      <FormLabel>API Identifier</FormLabel>
+                      <div className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground">
+                        <code className="font-mono">{selectedProduct.apiIdentifier}</code>
+                      </div>
+                      <FormDescription>
+                        Auto-generated unique code
+                      </FormDescription>
+                    </FormItem>
+                  )}
                 </div>
 
                 <FormField

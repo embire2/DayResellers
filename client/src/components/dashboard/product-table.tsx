@@ -64,6 +64,7 @@ export function ProductTable({ products, onEdit, onDelete, categories = {} }: Pr
           <TableRow>
             <TableHead className="w-[250px]">Product Name</TableHead>
             <TableHead>Category</TableHead>
+            <TableHead>API ID</TableHead>
             <TableHead>Base Price</TableHead>
             <TableHead>Group 1 Price</TableHead>
             <TableHead>Group 2 Price</TableHead>
@@ -79,6 +80,11 @@ export function ProductTable({ products, onEdit, onDelete, categories = {} }: Pr
                 <div className="text-sm text-neutral-dark">
                   {/* Display category name if available, otherwise display ID */}
                   {categories[product.categoryId] || `Category ${product.categoryId}`}
+                </div>
+              </TableCell>
+              <TableCell>
+                <div className="text-sm font-mono">
+                  {product.apiIdentifier || "-"}
                 </div>
               </TableCell>
               <TableCell>{formatCurrency(parseFloat(product.basePrice.toString()))}</TableCell>
