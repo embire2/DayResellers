@@ -23,9 +23,10 @@ interface ProductTableProps {
   products: Product[];
   onEdit?: (product: Product) => void;
   onDelete?: (product: Product) => void;
+  categories?: Record<number, string>; // Map of category IDs to category names
 }
 
-export function ProductTable({ products, onEdit, onDelete }: ProductTableProps) {
+export function ProductTable({ products, onEdit, onDelete, categories = {} }: ProductTableProps) {
   // Function to render the status badge with appropriate colors
   const renderStatus = (status: ProductStatus) => {
     switch (status) {
@@ -76,8 +77,8 @@ export function ProductTable({ products, onEdit, onDelete }: ProductTableProps) 
               <TableCell className="font-medium">{product.name}</TableCell>
               <TableCell>
                 <div className="text-sm text-neutral-dark">
-                  {/* Display category name */}
-                  {product.categoryId}
+                  {/* Display category name if available, otherwise display ID */}
+                  {categories[product.categoryId] || `Category ${product.categoryId}`}
                 </div>
               </TableCell>
               <TableCell>{formatCurrency(parseFloat(product.basePrice.toString()))}</TableCell>

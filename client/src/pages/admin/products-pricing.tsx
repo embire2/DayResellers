@@ -61,11 +61,25 @@ export default function ProductsPricing() {
   // Fetch categories
   const { data: categories, isLoading: isLoadingCategories } = useQuery<ProductCategory[]>({
     queryKey: ['/api/product-categories', activeCategory],
+    queryFn: async () => {
+      const response = await fetch(`/api/product-categories/${activeCategory}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch categories');
+      }
+      return response.json();
+    },
   });
 
   // Fetch products
   const { data: products, isLoading: isLoadingProducts } = useQuery<Product[]>({
     queryKey: ['/api/products', activeCategory],
+    queryFn: async () => {
+      const response = await fetch(`/api/products/${activeCategory}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch products');
+      }
+      return response.json();
+    },
   });
 
   // Product form
@@ -94,7 +108,7 @@ export default function ProductsPricing() {
       return response.json();
     },
     onSuccess: (data: Product) => {
-      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/products', activeCategory] });
       setIsProductModalOpen(false);
       form.reset();
       toast({
@@ -123,7 +137,7 @@ export default function ProductsPricing() {
       return response.json();
     },
     onSuccess: (data: Product) => {
-      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/products', activeCategory] });
       setIsProductModalOpen(false);
       setIsEditingProduct(false);
       setSelectedProduct(null);
@@ -157,7 +171,7 @@ export default function ProductsPricing() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/products', activeCategory] });
       toast({
         title: "Product deleted",
         description: "Product has been successfully deleted",
@@ -255,6 +269,10 @@ export default function ProductsPricing() {
                       products={products || []}
                       onEdit={handleEditProduct}
                       onDelete={handleDeleteProduct}
+                      categories={categories?.reduce((acc, category) => {
+                        acc[category.id] = category.name;
+                        return acc;
+                      }, {} as Record<number, string>)}
                     />
                   )}
                 </CardContent>
