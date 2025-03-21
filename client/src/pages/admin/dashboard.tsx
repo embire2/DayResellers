@@ -23,9 +23,16 @@ export default function AdminDashboard() {
     queryKey: ['/api/admin/stats'],
   });
 
-  // Fetch products
+  // Fetch products by master category
   const { data: products, isLoading: isLoadingProducts } = useQuery<Product[]>({
     queryKey: ['/api/products', activeCategory],
+    queryFn: async () => {
+      const response = await fetch(`/api/products/${activeCategory}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch products');
+      }
+      return response.json();
+    },
   });
 
   // Fetch categories
