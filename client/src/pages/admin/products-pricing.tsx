@@ -50,6 +50,7 @@ const productFormSchema = insertProductSchema
   .extend({
     categoryId: z.string().min(1, "Category is required"),
     status: z.enum(["active", "limited", "outofstock"]),
+    apiIdentifier: z.string().max(3, "API identifier must be 3 digits maximum").optional(),
   });
 
 export default function ProductsPricing() {
@@ -95,6 +96,7 @@ export default function ProductsPricing() {
       categoryId: "",
       status: "active",
       apiEndpoint: "",
+      apiIdentifier: "",
     },
   });
 
@@ -207,6 +209,7 @@ export default function ProductsPricing() {
     form.setValue("categoryId", product.categoryId.toString());
     form.setValue("status", product.status as "active" | "limited" | "outofstock");
     form.setValue("apiEndpoint", product.apiEndpoint || "");
+    form.setValue("apiIdentifier", product.apiIdentifier || "");
     
     setIsProductModalOpen(true);
   };
@@ -229,6 +232,7 @@ export default function ProductsPricing() {
       categoryId: "",
       status: "active",
       apiEndpoint: "",
+      apiIdentifier: "",
     });
     setIsProductModalOpen(true);
   };
@@ -460,17 +464,32 @@ export default function ProductsPricing() {
                     )}
                   />
 
-                  {isEditingProduct && selectedProduct?.apiIdentifier && (
-                    <FormItem>
-                      <FormLabel>API Identifier</FormLabel>
-                      <div className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground">
-                        <code className="font-mono">{selectedProduct.apiIdentifier}</code>
-                      </div>
-                      <FormDescription>
-                        Auto-generated unique code
-                      </FormDescription>
-                    </FormItem>
-                  )}
+                  <FormField
+                    control={form.control}
+                    name="apiIdentifier"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>API Identifier</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Auto-generated for new products"
+                            className="font-mono"
+                            maxLength={3}
+                            value={field.value || ""}
+                            onChange={field.onChange}
+                            onBlur={field.onBlur}
+                            disabled={field.disabled}
+                            name={field.name}
+                            ref={field.ref}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          {isEditingProduct ? "Edit the 3-digit API identifier code" : "Leave blank to auto-generate a 3-digit code"}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
 
                 <FormField
