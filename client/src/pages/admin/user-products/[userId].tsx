@@ -19,6 +19,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { EditableField } from "@/components/ui/editable-field";
 import { EndpointDialog } from "@/components/user-products/endpoint-dialog";
 import { RunEndpointDialog } from "@/components/user-products/run-endpoint-dialog";
+import { UsageDataTab } from "@/components/user-products/usage-data-tab";
 import { 
   Loader2, 
   Plus, 
@@ -30,7 +31,9 @@ import {
   Link as LinkIcon,
   PackageOpen,
   AlertCircle,
-  Play
+  Play,
+  BarChart,
+  Activity
 } from "lucide-react";
 
 interface UserProductWithDetails extends UserProduct {
