@@ -898,103 +898,140 @@ function UserProductsList({
             </div>
           </CardHeader>
           <CardContent>
-            <div className="mb-4">
-              <div className="flex items-center mb-2">
-                <h4 className="font-medium">Comments</h4>
-              </div>
-              {onUpdateField ? (
-                <EditableField
-                  value={product.comments || ''}
-                  onSave={(value) => onUpdateField(product.id, 'comments', value)}
-                  type="textarea"
-                  placeholder="Add comments about this product assignment"
-                  className="w-full"
-                />
-              ) : (
-                product.comments ? (
-                  <div className="p-3 bg-muted rounded-md">
-                    <p className="text-sm text-muted-foreground">{product.comments}</p>
+            <Tabs defaultValue="details" className="w-full">
+              <TabsList className="mb-4">
+                <TabsTrigger value="details">
+                  <div className="flex items-center">
+                    <LinkIcon className="h-4 w-4 mr-2" />
+                    Details
                   </div>
-                ) : (
-                  <div className="p-3 border border-dashed rounded-md text-center">
-                    <p className="text-sm text-muted-foreground">No comments added</p>
+                </TabsTrigger>
+                <TabsTrigger value="endpoints">
+                  <div className="flex items-center">
+                    <Terminal className="h-4 w-4 mr-2" />
+                    API Endpoints
                   </div>
-                )
-              )}
-            </div>
-
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <h4 className="font-medium">API Endpoints</h4>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => onAddEndpoint(product)}
-                >
-                  <Plus className="h-3 w-3 mr-1" />
-                  Add Endpoint
-                </Button>
-              </div>
+                </TabsTrigger>
+                {/* Only show usage tab for products with API identifier 145 */}
+                {product.product?.apiIdentifier === '145' && (
+                  <TabsTrigger value="usage">
+                    <div className="flex items-center">
+                      <BarChart className="h-4 w-4 mr-2" />
+                      Usage Data
+                    </div>
+                  </TabsTrigger>
+                )}
+              </TabsList>
               
-              {product.endpoints && product.endpoints.length > 0 ? (
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Endpoint</TableHead>
-                        <TableHead>Parameters</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {product.endpoints.map((endpoint) => (
-                        <TableRow key={endpoint.id}>
-                          <TableCell>
-                            {endpoint.apiSettingId && renderEndpointName(endpoint.apiSettingId)}
-                          </TableCell>
-                          <TableCell>
-                            {endpoint.customParameters ? (
-                              <div className="font-mono text-xs bg-gray-100 dark:bg-gray-800 p-2 rounded max-w-md overflow-auto">
-                                {JSON.stringify(endpoint.customParameters, null, 2)}
-                              </div>
-                            ) : (
-                              <span className="text-muted-foreground">No custom parameters</span>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex justify-end gap-1">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-blue-600 hover:text-blue-800"
-                                onClick={() => onRunEndpoint(endpoint, endpoint.apiSettingId ? renderEndpointName(endpoint.apiSettingId) : 'Unknown Endpoint')}
-                                title="Run endpoint"
-                              >
-                                <Play className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-red-600 hover:text-red-800"
-                                onClick={() => onDeleteEndpoint(endpoint.id)}
-                                title="Delete endpoint"
-                              >
-                                <Trash className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+              <TabsContent value="details">
+                <div className="mb-4">
+                  <div className="flex items-center mb-2">
+                    <h4 className="font-medium">Comments</h4>
+                  </div>
+                  {onUpdateField ? (
+                    <EditableField
+                      value={product.comments || ''}
+                      onSave={(value) => onUpdateField(product.id, 'comments', value)}
+                      type="textarea"
+                      placeholder="Add comments about this product assignment"
+                      className="w-full"
+                    />
+                  ) : (
+                    product.comments ? (
+                      <div className="p-3 bg-muted rounded-md">
+                        <p className="text-sm text-muted-foreground">{product.comments}</p>
+                      </div>
+                    ) : (
+                      <div className="p-3 border border-dashed rounded-md text-center">
+                        <p className="text-sm text-muted-foreground">No comments added</p>
+                      </div>
+                    )
+                  )}
                 </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center p-6 border border-dashed rounded-md">
-                  <Terminal className="h-8 w-8 text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground">No API endpoints configured</p>
+              </TabsContent>
+              
+              <TabsContent value="endpoints">
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <h4 className="font-medium">API Endpoints</h4>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => onAddEndpoint(product)}
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      Add Endpoint
+                    </Button>
+                  </div>
+                  
+                  {product.endpoints && product.endpoints.length > 0 ? (
+                    <div className="rounded-md border">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Endpoint</TableHead>
+                            <TableHead>Parameters</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {product.endpoints.map((endpoint) => (
+                            <TableRow key={endpoint.id}>
+                              <TableCell>
+                                {endpoint.apiSettingId && renderEndpointName(endpoint.apiSettingId)}
+                              </TableCell>
+                              <TableCell>
+                                {endpoint.customParameters ? (
+                                  <div className="font-mono text-xs bg-gray-100 dark:bg-gray-800 p-2 rounded max-w-md overflow-auto">
+                                    {JSON.stringify(endpoint.customParameters, null, 2)}
+                                  </div>
+                                ) : (
+                                  <span className="text-muted-foreground">No custom parameters</span>
+                                )}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex justify-end gap-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-blue-600 hover:text-blue-800"
+                                    onClick={() => onRunEndpoint(endpoint, endpoint.apiSettingId ? renderEndpointName(endpoint.apiSettingId) : 'Unknown Endpoint')}
+                                    title="Run endpoint"
+                                  >
+                                    <Play className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-red-600 hover:text-red-800"
+                                    onClick={() => onDeleteEndpoint(endpoint.id)}
+                                    title="Delete endpoint"
+                                  >
+                                    <Trash className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center p-6 border border-dashed rounded-md">
+                      <Terminal className="h-8 w-8 text-muted-foreground mb-2" />
+                      <p className="text-sm text-muted-foreground">No API endpoints configured</p>
+                    </div>
+                  )}
                 </div>
+              </TabsContent>
+              
+              {/* Usage Data Tab */}
+              {product.product?.apiIdentifier === '145' && (
+                <TabsContent value="usage">
+                  <UsageDataTab userProduct={product} />
+                </TabsContent>
               )}
-            </div>
+            </Tabs>
           </CardContent>
           <CardFooter className="flex justify-end">
             <Button variant="destructive" size="sm" onClick={() => onDelete(product)}>
