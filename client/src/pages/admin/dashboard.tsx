@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { ProductTable } from "@/components/dashboard/product-table";
 import { ActivityList, Activity } from "@/components/dashboard/activity-list";
@@ -11,9 +12,14 @@ import { Plus, Users, CreditCard, Wifi } from "lucide-react";
 export default function AdminDashboard() {
   const { toast } = useToast();
   const [activeCategory, setActiveCategory] = useState<'MTN Fixed' | 'MTN GSM'>('MTN Fixed');
+  const [, navigate] = useLocation();
 
   // Fetch stats
-  const { data: stats } = useQuery({
+  const { data: stats } = useQuery<{
+    totalResellers: number;
+    monthlyRevenue: string;
+    activeSims: number;
+  }>({
     queryKey: ['/api/admin/stats'],
   });
 
@@ -28,18 +34,13 @@ export default function AdminDashboard() {
   });
 
   const handleEditProduct = (product: Product) => {
-    toast({
-      title: "Edit Product",
-      description: `Editing ${product.name}`,
-    });
+    // Navigate to products-pricing page for editing
+    navigate("/admin/products-pricing");
   };
 
   const handleDeleteProduct = (product: Product) => {
-    toast({
-      title: "Delete Product",
-      description: `Deleting ${product.name}`,
-      variant: "destructive",
-    });
+    // Navigate to products-pricing page where deletion can be handled
+    navigate("/admin/products-pricing");
   };
 
   return (
@@ -79,7 +80,7 @@ export default function AdminDashboard() {
         <div className="mt-8">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-medium text-neutral-darker">Products & Categories</h2>
-            <Button>
+            <Button onClick={() => navigate("/admin/products-pricing")}>
               <Plus className="h-4 w-4 mr-2" />
               Add Product
             </Button>
