@@ -82,13 +82,33 @@ router.post("/:endpointId", async (req: Request, res: Response) => {
     });
 
     // Base URL for Broadband.is API
-    const baseUrl = "https://www-lab.broadband.is";
+    const baseUrl = "https://www.broadband.is/api";
+    
+    // Get the product to determine the master category
+    const product = userProduct.productId ? await storage.getProduct(userProduct.productId) : null;
+    
+    // Get the product's category to determine the master category
+    let masterCategory = 'MTN GSM'; // Default to MTN GSM if we can't determine
+    if (product?.categoryId) {
+      const categories = await storage.getProductCategories();
+      const category = categories.find(cat => cat.id === product.categoryId);
+      if (category) {
+        masterCategory = category.masterCategory;
+      }
+    }
+    
+    // Get credentials based on master category
+    const credentials = {
+      username: masterCategory === 'MTN GSM' ? 'api@openweb.email.gsm' : 'api@openweb.email',
+      password: masterCategory === 'MTN GSM' ? 'fsV4iYUx0M' : 'fsV4iYUx0M'
+    };
     
     // Make the API request
     const response = await axios({
-      method: "post",
+      method: "get",
       url: `${baseUrl}${endpoint.endpointPath}`,
-      data: params,
+      params: params,
+      auth: credentials,
       headers: {
         "Content-Type": "application/json"
       }

@@ -367,4 +367,106 @@ export const setupApiIntegration = (app: Express) => {
       res.status(500).json({ success: false, error: errorMessage });
     }
   });
+
+  // Get monthly usage data for a user product
+  app.get('/api/user-products/:id/usage/:month?', async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ success: false, error: 'Not authenticated' });
+      }
+      
+      const userProductId = parseInt(req.params.id, 10);
+      if (isNaN(userProductId)) {
+        return res.status(400).json({ success: false, error: 'Invalid user product ID' });
+      }
+      
+      // Get the user product
+      const userProduct = await storage.getUserProduct(userProductId);
+      if (!userProduct) {
+        return res.status(404).json({ success: false, error: 'User product not found' });
+      }
+      
+      // Check if user is authorized (either admin or owner of the product)
+      if (req.user?.role !== 'admin' && req.user?.id !== userProduct.userId) {
+        return res.status(403).json({ success: false, error: 'Not authorized to access this user product' });
+      }
+      
+      // Get the product to check the API identifier
+      const product = await storage.getProduct(userProduct.productId);
+      if (!product) {
+        return res.status(404).json({ success: false, error: 'Product not found' });
+      }
+      
+      // Check if the product has API identifier '145' for usage data
+      if (product.apiIdentifier !== '145') {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'This product does not support usage data retrieval' 
+        });
+      }
+      
+      // Get the product category to determine the master category
+      const categories = await storage.getProductCategories();
+      const category = categories.find(cat => cat.id === product.categoryId);
+      if (!category) {
+        return res.status(404).json({ success: false, error: 'Product category not found' });
+      }
+      
+      const masterCategory = category.masterCategory;
+      if (masterCategory !== 'MTN Fixed' && masterCategory !== 'MTN GSM') {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Invalid master category. Must be "MTN Fixed" or "MTN GSM"' 
+        });
+      }
+      
+      // Get the month parameter or use the current month
+      const date = new Date();
+      const currentMonth = req.params.month ? req.params.month : 
+        `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+      
+      // Parse the month (format YYYY-MM)
+      const [year, month] = currentMonth.split('-');
+      
+      if (!year || !month || isNaN(parseInt(year)) || isNaN(parseInt(month))) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Invalid month format. Use YYYY-MM' 
+        });
+      }
+      
+      // Build the endpoint path for monthly usage
+      const endpoint = '/rest/lte/monthUsage.php';
+      
+      // Build the parameters
+      const params = {
+        year,
+        month,
+        usernames: userProduct.username
+      };
+      
+      // Execute the API request
+      const result = await makeApiRequest(masterCategory, endpoint, 'GET', params);
+      
+      // Convert usage data from bytes to GB if available
+      if (result.success && result.data && Array.isArray(result.data.data)) {
+        result.data.data.forEach((item: any) => {
+          if (item.Total) {
+            // Convert bytes to GB (1 GB = 1,073,741,824 bytes)
+            const totalBytes = parseInt(item.Total);
+            const totalGB = (totalBytes / 1073741824).toFixed(2);
+            item.TotalGB = totalGB;
+          }
+        });
+      }
+      
+      res.json(result);
+    } catch (error) {
+      let errorMessage = 'Failed to fetch usage data';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      res.status(500).json({ success: false, error: errorMessage });
+    }
+  });
 };
