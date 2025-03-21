@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, RefreshCw, AlertTriangle, Info } from "lucide-react";
+import { Loader2, RefreshCw, AlertTriangle, Info, BarChart, LinkIcon, Terminal } from "lucide-react";
 import { 
   Dialog, 
   DialogContent, 
@@ -17,6 +17,9 @@ import {
   DialogTitle,
   DialogTrigger 
 } from "@/components/ui/dialog";
+
+// Import the UsageDataTab component
+import { UsageDataTab } from "@/components/user-products/usage-data-tab";
 
 // Define the extended UserProduct type with product relation
 interface UserProductWithProduct extends UserProduct {
@@ -188,80 +191,121 @@ export default function MyProducts() {
       {/* Product Details Dialog */}
       {selectedProduct && (
         <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-3xl">
             <DialogHeader>
               <DialogTitle>{selectedProduct.product?.name}</DialogTitle>
               <DialogDescription>
-                Product details and endpoints
+                Product details and usage information
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h3 className="text-sm font-medium">Status</h3>
-                  <div>
-                    {(() => {
-                      switch (selectedProduct.status) {
-                        case "active": return <Badge className="bg-green-500">{selectedProduct.status}</Badge>;
-                        case "pending": return <Badge className="bg-yellow-500">{selectedProduct.status}</Badge>;
-                        case "suspended": return <Badge className="bg-orange-500">{selectedProduct.status}</Badge>;
-                        case "cancelled": return <Badge className="bg-red-500">{selectedProduct.status}</Badge>;
-                        default: return <Badge>{selectedProduct.status}</Badge>;
-                      }
-                    })()}
+            
+            <Tabs defaultValue="details" className="w-full">
+              <TabsList className="mb-4">
+                <TabsTrigger value="details">
+                  <div className="flex items-center">
+                    <LinkIcon className="h-4 w-4 mr-2" />
+                    Details
                   </div>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium">Username</h3>
-                  <p>{selectedProduct.username || 'N/A'}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium">MSISDN</h3>
-                  <p>{selectedProduct.msisdn || 'N/A'}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium">Created</h3>
-                  <p>{selectedProduct.createdAt ? new Date(selectedProduct.createdAt).toLocaleDateString() : 'N/A'}</p>
-                </div>
-              </div>
+                </TabsTrigger>
+                <TabsTrigger value="endpoints">
+                  <div className="flex items-center">
+                    <Terminal className="h-4 w-4 mr-2" />
+                    API Endpoints
+                  </div>
+                </TabsTrigger>
+                {/* Only show usage tab for products with API identifier 145 */}
+                {selectedProduct.product?.apiIdentifier === '145' && (
+                  <TabsTrigger value="usage">
+                    <div className="flex items-center">
+                      <BarChart className="h-4 w-4 mr-2" />
+                      Usage Data
+                    </div>
+                  </TabsTrigger>
+                )}
+              </TabsList>
+              
+              <TabsContent value="details">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <h3 className="text-sm font-medium">Status</h3>
+                      <div>
+                        {(() => {
+                          switch (selectedProduct.status) {
+                            case "active": return <Badge className="bg-green-500">{selectedProduct.status}</Badge>;
+                            case "pending": return <Badge className="bg-yellow-500">{selectedProduct.status}</Badge>;
+                            case "suspended": return <Badge className="bg-orange-500">{selectedProduct.status}</Badge>;
+                            case "cancelled": return <Badge className="bg-red-500">{selectedProduct.status}</Badge>;
+                            default: return <Badge>{selectedProduct.status}</Badge>;
+                          }
+                        })()}
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-medium">Username</h3>
+                      <p>{selectedProduct.username || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-medium">MSISDN</h3>
+                      <p>{selectedProduct.msisdn || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-medium">Created</h3>
+                      <p>{selectedProduct.createdAt ? new Date(selectedProduct.createdAt).toLocaleDateString() : 'N/A'}</p>
+                    </div>
+                  </div>
 
-              {selectedProduct.product && (
-                <div className="space-y-2 mt-4">
-                  <h3 className="text-sm font-medium">Product Details</h3>
-                  <div className="rounded-md bg-secondary p-3">
-                    <p><strong>Description:</strong> {selectedProduct.product.description}</p>
-                    <p><strong>Category:</strong> {selectedProduct.product.categoryId}</p>
-                    <p><strong>API Endpoint:</strong> {selectedProduct.product.apiEndpoint || 'N/A'}</p>
-                    <p className="mt-2"><strong>Payment Method:</strong> {user?.paymentMode === 'credit' ? 'Credit Balance' : 'Debit Order'}</p>
-                  </div>
-                </div>
-              )}
+                  {selectedProduct.product && (
+                    <div className="space-y-2 mt-4">
+                      <h3 className="text-sm font-medium">Product Details</h3>
+                      <div className="rounded-md bg-secondary p-3">
+                        <p><strong>Description:</strong> {selectedProduct.product.description}</p>
+                        <p><strong>Category:</strong> {selectedProduct.product.categoryId}</p>
+                        <p><strong>API Endpoint:</strong> {selectedProduct.product.apiEndpoint || 'N/A'}</p>
+                        <p className="mt-2"><strong>Payment Method:</strong> {user?.paymentMode === 'credit' ? 'Credit Balance' : 'Debit Order'}</p>
+                      </div>
+                    </div>
+                  )}
 
-              {selectedProduct.comments && (
-                <div className="space-y-2 mt-4">
-                  <h3 className="text-sm font-medium">Comments</h3>
-                  <div className="rounded-md bg-secondary p-3">
-                    <p>{selectedProduct.comments}</p>
-                  </div>
+                  {selectedProduct.comments && (
+                    <div className="space-y-2 mt-4">
+                      <h3 className="text-sm font-medium">Comments</h3>
+                      <div className="rounded-md bg-secondary p-3">
+                        <p>{selectedProduct.comments}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-
-              {/* Endpoints section - Will display if the endpoint data is available */}
-              {selectedProduct.endpoints && selectedProduct.endpoints.length > 0 && (
-                <div className="space-y-2 mt-4">
-                  <h3 className="text-sm font-medium">Endpoints</h3>
-                  <div className="rounded-md bg-secondary p-3">
-                    <ul className="list-disc pl-5 space-y-1">
-                      {selectedProduct.endpoints.map((endpoint: any) => (
-                        <li key={endpoint.id}>
-                          {endpoint.apiSetting?.name || 'Unknown Endpoint'}
-                        </li>
-                      ))}
-                    </ul>
+              </TabsContent>
+              
+              <TabsContent value="endpoints">
+                {selectedProduct.endpoints && selectedProduct.endpoints.length > 0 ? (
+                  <div className="space-y-2">
+                    <div className="rounded-md bg-secondary p-3">
+                      <ul className="list-disc pl-5 space-y-1">
+                        {selectedProduct.endpoints.map((endpoint: any) => (
+                          <li key={endpoint.id}>
+                            {endpoint.apiSetting?.name || 'Unknown Endpoint'}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center p-6 border border-dashed rounded-md">
+                    <Terminal className="h-8 w-8 text-muted-foreground mb-2" />
+                    <p className="text-sm text-muted-foreground">No API endpoints configured</p>
+                  </div>
+                )}
+              </TabsContent>
+              
+              {/* Usage Data Tab - Only displayed for products with API identifier 145 */}
+              {selectedProduct.product?.apiIdentifier === '145' && (
+                <TabsContent value="usage">
+                  <UsageDataTab userProduct={selectedProduct} />
+                </TabsContent>
               )}
-            </div>
+            </Tabs>
           </DialogContent>
         </Dialog>
       )}
