@@ -5,7 +5,7 @@ import { StatCard } from "@/components/dashboard/stat-card";
 import { ProductTable } from "@/components/dashboard/product-table";
 import { ActivityList, Activity } from "@/components/dashboard/activity-list";
 import { Button } from "@/components/ui/button";
-import { Product } from "@shared/schema";
+import { Product, ProductCategory } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Users, CreditCard, Wifi } from "lucide-react";
 
@@ -28,6 +28,18 @@ export default function AdminDashboard() {
     queryKey: ['/api/products', activeCategory],
   });
 
+  // Fetch categories
+  const { data: categories, isLoading: isLoadingCategories } = useQuery<ProductCategory[]>({
+    queryKey: ['/api/product-categories', activeCategory],
+    queryFn: async () => {
+      const response = await fetch(`/api/product-categories/${activeCategory}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch categories');
+      }
+      return response.json();
+    },
+  });
+
   // Fetch activities
   const { data: activities, isLoading: isLoadingActivities } = useQuery<Activity[]>({
     queryKey: ['/api/admin/activities'],
@@ -42,6 +54,12 @@ export default function AdminDashboard() {
     // Navigate to products-pricing page where deletion can be handled
     navigate("/admin/products-pricing");
   };
+  
+  // Create a map of category IDs to category names
+  const categoryMap = categories?.reduce((acc, category) => {
+    acc[category.id] = category.name;
+    return acc;
+  }, {} as Record<number, string>) || {};
 
   return (
     <div className="py-6">
@@ -116,7 +134,7 @@ export default function AdminDashboard() {
 
           {/* Product Table */}
           <div className="mt-6">
-            {isLoadingProducts ? (
+            {isLoadingProducts || isLoadingCategories ? (
               <div className="flex justify-center py-10">
                 <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
               </div>
@@ -125,6 +143,7 @@ export default function AdminDashboard() {
                 products={products || []}
                 onEdit={handleEditProduct}
                 onDelete={handleDeleteProduct}
+                categories={categoryMap}
               />
             )}
           </div>
