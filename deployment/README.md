@@ -1,6 +1,6 @@
 # Day Reseller Platform - DirectAdmin Installation Guide
 
-This guide provides detailed instructions for installing the Day Reseller Platform on a DirectAdmin server.
+This guide provides detailed instructions for installing the Day Reseller Platform on a DirectAdmin server, focusing on the Broadband.is API integration for usage statistics.
 
 ## Prerequisites
 
@@ -79,11 +79,32 @@ This guide provides detailed instructions for installing the Day Reseller Platfo
    }
    ```
 
-5. **Start the Application with PM2**:
+5. **Edit Production Configuration**:
+   
+   Review and update `production.config.js` with your specific settings:
+   
+   ```javascript
+   // Update API credentials if needed
+   api: {
+     mtnFixed: {
+       endpoint: 'https://www.broadband.is',
+       username: 'api@openweb.email',
+       password: 'fsV4iYUx0M'
+     },
+     mtnGsm: {
+       endpoint: 'https://www.broadband.is',
+       username: 'api@openweb.email.gsm',
+       password: 'fsV4iYUx0M'
+     },
+     // ...
+   }
+   ```
+
+6. **Start the Application with PM2**:
    
    ```bash
    npm install -g pm2
-   pm2 start ecosystem.config.js
+   NODE_ENV=production pm2 start ecosystem.config.js
    pm2 save
    pm2 startup
    ```
@@ -136,7 +157,39 @@ This guide provides detailed instructions for installing the Day Reseller Platfo
 1. Visit your domain in a browser to verify the application is working.
 2. Default admin login:
    - Username: `ceo@openweb.co.za`
-   - Password: (Use the password from the original deployment)
+   - Password: `admin123`
+
+3. **Test the Broadband.is API Integration**:
+   
+   Navigate to "My Products" as a reseller with products that have API identifier '145' to check that usage statistics are displaying correctly.
+
+## Broadband.is API Integration Details
+
+### Overview
+
+The platform integrates with Broadband.is API to fetch and display monthly usage statistics for products with API identifier '145'. This feature allows resellers to view detailed usage data for their customers' products.
+
+### Key Integration Points
+
+1. **API Endpoint**:
+   - The integration uses the `/rest/lte/monthUsage.php` endpoint
+   - Parameters: year, month, and usernames
+
+2. **Authentication**:
+   - MTN Fixed products use: api@openweb.email / fsV4iYUx0M
+   - MTN GSM products use: api@openweb.email.gsm / fsV4iYUx0M
+
+3. **Data Formatting**:
+   - Usage data is converted from bytes to GB for display
+   - Displays data for current month plus three previous months
+   - Formatted in user-friendly tables with tabs for each month
+
+### Testing API Integration
+
+1. Log in as a reseller user
+2. Navigate to "My Products"
+3. Find a product with API identifier '145'
+4. Click "View Details" to see the usage statistics tab
 
 ## Troubleshooting
 
@@ -151,6 +204,13 @@ This guide provides detailed instructions for installing the Day Reseller Platfo
 - Check PM2 logs: `pm2 logs day-reseller-platform`
 - Verify Node.js version: `node -v` (should be v18+)
 - Look for permission issues: `chown -R www-data:www-data /var/www/day-reseller`
+
+### API Integration Issues
+
+- Check API credentials in `production.config.js`
+- Verify network connectivity to Broadband.is from your server
+- Look for API-related errors in application logs: `pm2 logs day-reseller-platform`
+- Ensure products have the correct API identifier '145' in the database
 
 ### Nginx/Server Issues
 
@@ -200,3 +260,4 @@ This guide provides detailed instructions for installing the Day Reseller Platfo
 - [Nginx Documentation](https://nginx.org/en/docs/)
 - [PostgreSQL Documentation](https://www.postgresql.org/docs/)
 - [DirectAdmin Documentation](https://www.directadmin.com/features.php?id=910)
+- [Broadband.is API Documentation](https://www.broadband.is/api-docs) (Request access from Broadband.is)
