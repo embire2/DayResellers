@@ -84,6 +84,12 @@ router.post("/:endpointId", async (req: Request, res: Response) => {
     // Base URL for Broadband.is API
     const baseUrl = "https://www.broadband.is/api";
     
+    // Replit production IP address that the provider has whitelisted
+    const REPLIT_PRODUCTION_IP = '34.111.179.208';
+    
+    // Check if running in production environment
+    const isProduction = process.env.NODE_ENV === 'production';
+    
     // Get the product to determine the master category
     const product = userProduct.productId ? await storage.getProduct(userProduct.productId) : null;
     
@@ -99,19 +105,35 @@ router.post("/:endpointId", async (req: Request, res: Response) => {
     
     // Get credentials based on master category
     const credentials = {
-      username: masterCategory === 'MTN GSM' ? 'api@openweb.email.gsm' : 'api@openweb.email',
-      password: masterCategory === 'MTN GSM' ? 'fsV4iYUx0M' : 'fsV4iYUx0M'
+      username: masterCategory === 'MTN GSM' ? process.env.MTN_GSM_USERNAME || 'api@openweb.email.gsm' : process.env.MTN_FIXED_USERNAME || 'api@openweb.email',
+      password: masterCategory === 'MTN GSM' ? process.env.MTN_GSM_PASSWORD || 'fsV4iYUx0M' : process.env.MTN_FIXED_PASSWORD || 'fsV4iYUx0M'
     };
+    
+    // Ensure the endpoint path starts with a slash
+    const formattedEndpointPath = endpoint.endpointPath.startsWith('/') 
+      ? endpoint.endpointPath 
+      : `/${endpoint.endpointPath}`;
+    
+    // Add headers for IP verification when in production
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json"
+    };
+    
+    // In production, include information about the Replit production IP
+    if (isProduction) {
+      // The provider blocks all IPs except the Replit production IP
+      // Note: We don't need to manually set the IP - this is informational 
+      // as the request will be coming from the Replit production IP
+      headers['X-Replit-Production'] = 'true';
+    }
     
     // Make the API request
     const response = await axios({
       method: "get",
-      url: `${baseUrl}${endpoint.endpointPath}`,
+      url: `${baseUrl}${formattedEndpointPath}`,
       params: params,
       auth: credentials,
-      headers: {
-        "Content-Type": "application/json"
-      }
+      headers
     });
 
     return res.status(200).json({

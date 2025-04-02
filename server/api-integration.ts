@@ -10,6 +10,9 @@ const MTN_FIXED_PASSWORD = process.env.MTN_FIXED_PASSWORD || 'fsV4iYUx0M';
 const MTN_GSM_PASSWORD = process.env.MTN_GSM_PASSWORD || 'fsV4iYUx0M';
 const BROADBAND_API_BASE_URL = 'https://www.broadband.is/api';
 
+// Replit production IP address that the provider has whitelisted
+const REPLIT_PRODUCTION_IP = '34.111.179.208';
+
 interface APICredentials {
   username: string;
   password: string;
@@ -23,6 +26,11 @@ const getCredentials = (masterCategory: string): APICredentials => {
   };
 };
 
+// Check if running in production environment
+const isProduction = (): boolean => {
+  return process.env.NODE_ENV === 'production';
+};
+
 // Generic API request handler
 const makeApiRequest = async (
   masterCategory: string,
@@ -32,8 +40,25 @@ const makeApiRequest = async (
 ): Promise<BroadbandApiResponse> => {
   try {
     const credentials = getCredentials(masterCategory);
-    const url = `${BROADBAND_API_BASE_URL}${endpoint}`;
-
+    
+    // Ensure endpoint starts with a slash
+    const formattedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    const url = `${BROADBAND_API_BASE_URL}${formattedEndpoint}`;
+    
+    // Add headers for IP verification when in production
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    };
+    
+    // In production, include information about the Replit production IP
+    if (isProduction()) {
+      // The provider blocks all IPs except the Replit production IP
+      // Note: We don't need to manually set the IP - this is informational 
+      // as the request will be coming from the Replit production IP
+      headers['X-Replit-Production'] = 'true';
+    }
+    
+    // Make the API request
     const response = await axios({
       method,
       url,
@@ -41,7 +66,8 @@ const makeApiRequest = async (
       auth: {
         username: credentials.username,
         password: credentials.password
-      }
+      },
+      headers
     });
 
     return {
@@ -56,6 +82,13 @@ const makeApiRequest = async (
                      error.response?.statusText || 
                      error.message || 
                      errorMessage;
+                     
+      // Add more context about IP address restrictions when in development environment
+      if (!isProduction()) {
+        errorMessage += ' (Note: The API provider blocks all IPs except Replit production IP: ' +
+                        REPLIT_PRODUCTION_IP +
+                        '. This request may be blocked if not coming from that IP)';
+      }
     } else if (error instanceof Error) {
       errorMessage = error.message;
     }
