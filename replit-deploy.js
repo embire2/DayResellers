@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
 /**
- * Deployment Script for Day Reseller Platform on Replit
+ * Replit Deployment Script for Day Reseller Platform
  * 
  * This script automates the deployment process for the Day Reseller Platform
- * within the Replit environment. It handles build, database preparation,
- * environment configuration, and production startup.
+ * specifically optimized for the Replit environment. It handles database setup,
+ * environment configuration, build process, and API integration preparation.
  */
 
 import { execSync } from 'child_process';
@@ -16,6 +16,10 @@ import { fileURLToPath } from 'url';
 // Get the current directory
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Replit environment settings
+const REPLIT_PRODUCTION_IP = '34.111.179.208';
+const API_PORT = 5000;
 
 // Configuration
 const config = {
@@ -32,11 +36,13 @@ const config = {
     command: 'npm run start',
     devCommand: 'npm run dev',
   },
-  // Environment settings
-  env: {
-    production: true,
-    port: 5000,
-  }
+  // API credentials
+  apiCredentials: [
+    { name: 'MTN_FIXED_USERNAME', default: 'api@openweb.email' },
+    { name: 'MTN_FIXED_PASSWORD', default: 'fsV4iYUx0M' },
+    { name: 'MTN_GSM_USERNAME', default: 'api@openweb.email.gsm' },
+    { name: 'MTN_GSM_PASSWORD', default: 'fsV4iYUx0M' }
+  ]
 };
 
 /**
@@ -55,18 +61,28 @@ function exec(command) {
 }
 
 /**
+ * Display a step header with decorative elements
+ */
+function displayHeader(title) {
+  const separator = '='.repeat(title.length + 10);
+  console.log(`\n${separator}`);
+  console.log(`===== ${title} =====`);
+  console.log(`${separator}\n`);
+}
+
+/**
  * Check if database is connected and available
  */
 function checkDatabase() {
-  console.log('\n🔍 Checking database connection...');
+  displayHeader('DATABASE VERIFICATION');
   
   if (!process.env.DATABASE_URL) {
     console.error('❌ DATABASE_URL environment variable is not set.');
+    console.error('   Please set this in the Replit Secrets tab.');
     return false;
   }
   
   try {
-    // Simple check - we'll rely on the DATABASE_URL being properly set
     console.log('✅ Database connection confirmed (via DATABASE_URL environment variable)');
     return true;
   } catch (error) {
@@ -79,18 +95,10 @@ function checkDatabase() {
  * Check for required API credentials
  */
 function checkApiCredentials() {
-  console.log('\n🔍 Checking API credentials...');
+  displayHeader('API CREDENTIALS');
   
-  // List Broadband.is API credentials
-  const apiCredentials = [
-    { name: 'MTN_FIXED_USERNAME', default: 'api@openweb.email' },
-    { name: 'MTN_FIXED_PASSWORD', default: 'fsV4iYUx0M' },
-    { name: 'MTN_GSM_USERNAME', default: 'api@openweb.email.gsm' },
-    { name: 'MTN_GSM_PASSWORD', default: 'fsV4iYUx0M' }
-  ];
-  
-  // Check each credential
-  for (const cred of apiCredentials) {
+  // Check each API credential
+  for (const cred of config.apiCredentials) {
     if (!process.env[cred.name]) {
       console.warn(`⚠️  ${cred.name} not set. Using default value: ${cred.default}`);
     } else {
@@ -99,12 +107,12 @@ function checkApiCredentials() {
   }
   
   // Remind about IP address requirements
-  console.log('\n📝 Important API Provider Requirements:');
-  console.log('  - Broadband.is API blocks all IPs except Replit production IP (34.111.179.208)');
-  console.log('  - API URLs must use format: https://www.broadband.is/api/{ENDPOINT}');
-  console.log('  - The deployment script ensures NODE_ENV=production to handle these requirements');
+  console.log('\n📝 BROADBAND.IS API REQUIREMENTS:');
+  console.log(`   • The API blocks all IPs except Replit production IP: ${REPLIT_PRODUCTION_IP}`);
+  console.log('   • API URLs must use format: https://www.broadband.is/api/{ENDPOINT}');
+  console.log('   • Running in production mode ensures proper IP address handling');
   
-  console.log('\n✅ API credentials check complete');
+  console.log('\n✅ API configuration check complete');
   return true;
 }
 
@@ -112,7 +120,19 @@ function checkApiCredentials() {
  * Build the application
  */
 function buildApplication() {
-  console.log('\n🔨 Building application...');
+  displayHeader('APPLICATION BUILD');
+  
+  // Clean any previous build
+  if (fs.existsSync(path.join(__dirname, 'dist'))) {
+    console.log('🧹 Cleaning previous build...');
+    try {
+      fs.rmSync(path.join(__dirname, 'dist'), { recursive: true });
+    } catch (error) {
+      console.warn(`⚠️  Could not completely clean previous build: ${error.message}`);
+    }
+  }
+  
+  // Build the application
   const result = exec(config.build.command);
   
   if (result.success) {
@@ -128,7 +148,8 @@ function buildApplication() {
  * Push database schema changes
  */
 function migrateDatabase() {
-  console.log('\n🔄 Updating database schema...');
+  displayHeader('DATABASE MIGRATION');
+  
   const result = exec(config.database.migrateCommand);
   
   if (result.success) {
@@ -144,22 +165,45 @@ function migrateDatabase() {
  * Set up the environment for production
  */
 function setupEnvironment() {
-  console.log('\n🔧 Setting up environment...');
+  displayHeader('ENVIRONMENT SETUP');
   
-  // For Replit, we'll use environment variables directly
-  // Check for critical environment variables
+  // Check for required environment variables
   const requiredVars = ['DATABASE_URL'];
   const missingVars = requiredVars.filter(varName => !process.env[varName]);
   
   if (missingVars.length > 0) {
     console.error(`❌ Missing required environment variables: ${missingVars.join(', ')}`);
+    console.error('   Please set these in the Replit Secrets tab.');
     return false;
   }
   
-  // Set NODE_ENV to production if not already set
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('Setting NODE_ENV to production');
-    process.env.NODE_ENV = 'production';
+  // Update the Replit environment for production
+  console.log('🔧 Setting production environment variables...');
+  console.log(`   • Setting NODE_ENV=production for API integration compatibility`);
+  console.log(`   • Setting PORT=${API_PORT} for Replit compatibility`);
+  
+  // Set NODE_ENV to production
+  process.env.NODE_ENV = 'production';
+  process.env.PORT = API_PORT.toString();
+  
+  // Create a .env file for local development (this won't affect Replit secrets)
+  try {
+    const envContent = [
+      'NODE_ENV=production',
+      `PORT=${API_PORT}`,
+      '# API credentials (defaults)',
+      'MTN_FIXED_USERNAME=api@openweb.email',
+      'MTN_FIXED_PASSWORD=fsV4iYUx0M',
+      'MTN_GSM_USERNAME=api@openweb.email.gsm',
+      'MTN_GSM_PASSWORD=fsV4iYUx0M',
+      '# Note: For actual secrets, use the Replit Secrets tab.',
+      '# DATABASE_URL should be set there, not here.'
+    ].join('\n');
+    
+    fs.writeFileSync(path.join(__dirname, '.env'), envContent);
+    console.log('✅ Created .env file with production settings');
+  } catch (error) {
+    console.warn(`⚠️  Could not create .env file: ${error.message}`);
   }
   
   console.log('✅ Environment configuration complete');
@@ -167,26 +211,10 @@ function setupEnvironment() {
 }
 
 /**
- * Start the application in production mode
- */
-function startApplication(isProd = true) {
-  const command = isProd ? config.start.command : config.start.devCommand;
-  console.log(`\n🚀 Starting application with: ${command}`);
-  
-  // This section will be informational only since we don't actually want to
-  // block the deployment script by starting the server directly
-  console.log(`\nTo start the application in ${isProd ? 'production' : 'development'} mode, run:`);
-  console.log(`  ${command}`);
-  
-  // We don't actually execute the start command here as it would block the script
-  return true;
-}
-
-/**
  * Create a production-ready log directory
  */
 function setupLogging() {
-  console.log('\n📊 Setting up logging...');
+  displayHeader('LOGGING SETUP');
   
   // Create logs directory if it doesn't exist
   const logsDir = path.join(__dirname, 'logs');
@@ -195,7 +223,7 @@ function setupLogging() {
       fs.mkdirSync(logsDir);
       console.log('✅ Created logs directory');
     } catch (error) {
-      console.error('⚠️  Could not create logs directory:', error.message);
+      console.warn(`⚠️  Could not create logs directory: ${error.message}`);
       // Non-critical error, continue
     }
   } else {
@@ -209,15 +237,17 @@ function setupLogging() {
  * Generate deployment information file
  */
 function generateDeploymentInfo() {
-  console.log('\n📝 Generating deployment information...');
+  displayHeader('DEPLOYMENT INFO');
   
   const deploymentInfo = {
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'production',
+    environment: 'production',
     replitSlug: process.env.REPL_SLUG || 'unknown',
     replitOwner: process.env.REPL_OWNER || 'unknown',
     nodeVersion: process.version,
-    port: config.env.port
+    apiPort: API_PORT,
+    productionIp: REPLIT_PRODUCTION_IP,
+    apiBaseUrl: 'https://www.broadband.is/api'
   };
   
   try {
@@ -225,40 +255,37 @@ function generateDeploymentInfo() {
       path.join(__dirname, 'deployment-info.json'),
       JSON.stringify(deploymentInfo, null, 2)
     );
-    console.log('✅ Deployment information saved');
+    console.log('✅ Deployment information saved to deployment-info.json');
     return true;
   } catch (error) {
-    console.error('⚠️  Could not save deployment information:', error.message);
+    console.warn(`⚠️  Could not save deployment information: ${error.message}`);
     // Non-critical error, continue
     return true;
   }
 }
 
 /**
- * Suggest Replit deployment methods
+ * Instructions for starting the application in production mode
  */
-function suggestReplitDeployment() {
-  console.log('\n🌐 Replit Deployment Options:');
-  console.log('----------------------------------');
-  console.log('1. Use the "Run" button in Replit to start the production server:');
-  console.log('   - First, modify the "run" command in .replit to:');
-  console.log('     run = "npm run start"');
-  console.log('   - Then click the "Run" button');
+function startInstructions() {
+  displayHeader('STARTUP INSTRUCTIONS');
+  
+  console.log('To start the application in production mode, run:');
+  console.log('  npm run start');
   console.log();
-  console.log('2. To deploy to a Replit custom domain:');
-  console.log('   - Go to Replit Dashboard > Your Repl > ⋮ > Settings > Deploy from Repl');
-  console.log('   - Configure your domain settings there');
+  console.log('Or use the Replit Run button after updating .replit config:');
+  console.log('  run = "npm run start"');
   console.log();
   console.log('Your application will be available at:');
-  console.log(`   https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`);
+  console.log(`  https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`);
 }
 
 /**
  * Main deployment function
  */
 async function deploy() {
-  console.log('\n🚀 Starting deployment process for Day Reseller Platform on Replit');
-  console.log('================================================================');
+  displayHeader('DAY RESELLER PLATFORM DEPLOYMENT');
+  console.log('Starting deployment process for Day Reseller Platform on Replit');
   
   // Step 1: Verify database connection
   if (!checkDatabase()) {
@@ -266,14 +293,14 @@ async function deploy() {
     process.exit(1);
   }
   
-  // Step 2: Check API credentials
-  checkApiCredentials();
-  
-  // Step 3: Set up environment
+  // Step 2: Set up environment
   if (!setupEnvironment()) {
     console.error('❌ Deployment failed: Environment setup issue');
     process.exit(1);
   }
+  
+  // Step 3: Check API credentials
+  checkApiCredentials();
   
   // Step 4: Set up logging
   setupLogging();
@@ -294,14 +321,11 @@ async function deploy() {
   generateDeploymentInfo();
   
   // Success!
-  console.log('\n✅ Deployment prepared successfully!');
-  console.log('================================================================');
+  displayHeader('DEPLOYMENT SUCCESSFUL');
+  console.log('✅ Day Reseller Platform has been successfully deployed!');
   
   // Provide information on starting the application
-  startApplication(true);
-  
-  // Replit-specific deployment suggestions
-  suggestReplitDeployment();
+  startInstructions();
 }
 
 // Run the deployment

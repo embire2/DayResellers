@@ -9,12 +9,14 @@ Before deploying, ensure that:
 1. **PostgreSQL Database**: Your PostgreSQL database is properly configured and accessible
 2. **Environment Variables**: The following environment variables are set in Replit's Secrets tab:
    - `DATABASE_URL`: Connection string for your PostgreSQL database
-   - Any API credentials required by your application
+   - API credentials (optional, defaults are provided):
+     - `MTN_FIXED_USERNAME` and `MTN_FIXED_PASSWORD`
+     - `MTN_GSM_USERNAME` and `MTN_GSM_PASSWORD`
 3. **Node.js**: The application requires Node.js, which is included in the Replit environment
 
 ## Deployment Process
 
-### Method 1: Automated Deployment (Recommended)
+### Automated Deployment (Recommended)
 
 The easiest way to deploy is using the included deployment script:
 
@@ -26,37 +28,28 @@ bash deploy.sh
 
 This automated script will:
 - Verify your database connection
-- Check for required environment variables
+- Set up production environment variables
+- Check API credentials and configurations
 - Set up the necessary logging infrastructure
 - Build the application for production
 - Apply database schema updates via Drizzle
-- Generate deployment information for future reference
+- Generate detailed deployment information
 
-After the script completes successfully, you can use Replit's "Deploy" button to make your application publicly accessible.
+The script creates `deployment-info.json` which contains information about your deployment environment, including the Replit production IP address and API integration details.
 
-### Method 2: Step-by-Step Manual Deployment
+After successful deployment, start your application in production mode with:
 
-If you prefer a manual deployment process:
+```bash
+npm run start
+```
 
-1. **Prepare the Environment**:
-   ```bash
-   export NODE_ENV=production
-   ```
+### Direct Deployment Script
 
-2. **Build the Application**:
-   ```bash
-   npm run build
-   ```
+You can also run the deployment script directly:
 
-3. **Update Database Schema**:
-   ```bash
-   npm run db:push
-   ```
-
-4. **Start the Application in Production Mode**:
-   ```bash
-   npm run start
-   ```
+```bash
+node replit-deploy.js
+```
 
 ## Replit Deployment Options
 
