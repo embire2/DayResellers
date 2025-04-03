@@ -9,6 +9,8 @@ import { logger } from "./logger";
 import userProductsRouter from "./api/user-products";
 import runEndpointRouter from "./api/run-endpoint";
 import { eq } from "drizzle-orm";
+import { setupScraperRoutes } from "./scraper";
+import { initScraperService } from "./scraper/service";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
@@ -19,6 +21,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Setup diagnostic routes
   setupDiagnosticRoutes(app);
+  
+  // Setup web scraper routes
+  setupScraperRoutes(app);
+  
+  // Initialize scraper service
+  initScraperService(app);
   
   // API Settings routes
   app.get("/api/api-settings", async (req, res) => {

@@ -8,6 +8,7 @@ export type ProductStatus = 'active' | 'limited' | 'outofstock';
 export type UserProductStatus = 'active' | 'pending' | 'suspended' | 'cancelled';
 export type OrderStatus = 'pending' | 'active' | 'rejected';
 export type ProvisionMethod = 'courier' | 'self';
+export type ScraperScheduleFrequency = 'hourly' | 'daily' | 'weekly' | 'monthly' | 'custom';
 
 // User model with roles
 export const users = pgTable("users", {
@@ -129,6 +130,43 @@ export const productOrders = pgTable("product_orders", {
   createdAt: timestamp("created_at").defaultNow()
 });
 
+// Web Scraper Config
+export const scraperConfigs = pgTable("scraper_configs", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  url: text("url").notNull(),
+  selector: text("selector").notNull(),
+  description: text("description"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  createdBy: integer("created_by").notNull()
+});
+
+// Scraper Schedules
+export const scraperSchedules = pgTable("scraper_schedules", {
+  id: serial("id").primaryKey(),
+  scraperConfigId: integer("scraper_config_id").notNull(),
+  frequency: text("frequency").notNull(), // hourly, daily, weekly, monthly, custom
+  interval: integer("interval").default(1), // Run every X hours/days/etc
+  customCron: text("custom_cron"), // For custom frequency using cron syntax
+  lastRun: timestamp("last_run"),
+  nextRun: timestamp("next_run"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow()
+});
+
+// Scraper Results
+export const scraperResults = pgTable("scraper_results", {
+  id: serial("id").primaryKey(),
+  scraperConfigId: integer("scraper_config_id").notNull(),
+  executionTime: timestamp("execution_time").notNull().defaultNow(),
+  duration: integer("duration"), // Duration in milliseconds
+  success: boolean("success").notNull(),
+  resultData: jsonb("result_data"),
+  errorMessage: text("error_message"),
+  createdAt: timestamp("created_at").defaultNow()
+});
+
 // Schemas for inserting data
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true, dashboardConfig: true });
 export const insertProductCategorySchema = createInsertSchema(productCategories).omit({ id: true, createdAt: true });
@@ -140,6 +178,9 @@ export const insertUserProductSchema = createInsertSchema(userProducts).omit({ i
 export const insertUserProductEndpointSchema = createInsertSchema(userProductEndpoints).omit({ id: true, createdAt: true });
 export const insertTransactionSchema = createInsertSchema(transactions).omit({ id: true, createdAt: true });
 export const insertProductOrderSchema = createInsertSchema(productOrders).omit({ id: true, createdAt: true });
+export const insertScraperConfigSchema = createInsertSchema(scraperConfigs).omit({ id: true, createdAt: true });
+export const insertScraperScheduleSchema = createInsertSchema(scraperSchedules).omit({ id: true, createdAt: true, lastRun: true, nextRun: true });
+export const insertScraperResultSchema = createInsertSchema(scraperResults).omit({ id: true, createdAt: true });
 
 // Types for selections
 export type User = typeof users.$inferSelect;
@@ -152,6 +193,9 @@ export type UserProduct = typeof userProducts.$inferSelect;
 export type UserProductEndpoint = typeof userProductEndpoints.$inferSelect;
 export type Transaction = typeof transactions.$inferSelect;
 export type ProductOrder = typeof productOrders.$inferSelect;
+export type ScraperConfig = typeof scraperConfigs.$inferSelect;
+export type ScraperSchedule = typeof scraperSchedules.$inferSelect;
+export type ScraperResult = typeof scraperResults.$inferSelect;
 
 // Types for inserts
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -164,3 +208,6 @@ export type InsertUserProduct = z.infer<typeof insertUserProductSchema>;
 export type InsertUserProductEndpoint = z.infer<typeof insertUserProductEndpointSchema>;
 export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
 export type InsertProductOrder = z.infer<typeof insertProductOrderSchema>;
+export type InsertScraperConfig = z.infer<typeof insertScraperConfigSchema>;
+export type InsertScraperSchedule = z.infer<typeof insertScraperScheduleSchema>;
+export type InsertScraperResult = z.infer<typeof insertScraperResultSchema>;
