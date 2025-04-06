@@ -5,6 +5,12 @@
 
 import fs from 'fs';
 import http from 'http';
+import pkg from 'pg';
+const { Pool } = pkg;
+
+// Global variables
+let dbConnectionStatus = 'Not tested';
+let dbError = null;
 
 // Load environment variables from .env file
 function loadEnv() {
@@ -25,7 +31,38 @@ function loadEnv() {
   }
 }
 
-// Start a minimal Express server
+// Test database connection
+async function testDatabaseConnection() {
+  if (!process.env.DATABASE_URL) {
+    dbConnectionStatus = 'No connection string';
+    return false;
+  }
+
+  try {
+    const pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: {
+        rejectUnauthorized: false
+      }
+    });
+
+    const client = await pool.connect();
+    const result = await client.query('SELECT NOW() as currentTime');
+    client.release();
+
+    dbConnectionStatus = 'Connected';
+    console.log('Database connection test successful');
+    console.log(`Database time: ${result.rows[0].currenttime}`);
+    return true;
+  } catch (error) {
+    dbConnectionStatus = 'Error connecting';
+    dbError = error.message;
+    console.error('Database connection test failed:', error.message);
+    return false;
+  }
+}
+
+// Start a minimal HTTP server
 async function startMinimalServer() {
   try {
     // Load environment variables
@@ -36,8 +73,25 @@ async function startMinimalServer() {
     console.log(`Node Environment: ${process.env.NODE_ENV || 'Not set'}`);
     console.log(`Port: ${process.env.PORT || '5000 (default)'}`);
     
-    // Simple HTTP server
+    // Test database connection (don't wait for it to complete before starting server)
+    testDatabaseConnection().then(connected => {
+      console.log(`Database connection status: ${dbConnectionStatus}`);
+    });
+    
+    // Create routes for the server
     const server = http.createServer((req, res) => {
+      // Simple router
+      if (req.url === '/health') {
+        res.writeHead(200, {'Content-Type': 'application/json'});
+        res.end(JSON.stringify({
+          status: 'ok',
+          version: process.version,
+          database: dbConnectionStatus
+        }));
+        return;
+      }
+      
+      // Default route - main HTML page
       res.writeHead(200, {'Content-Type': 'text/html'});
       res.end(`
         <!DOCTYPE html>
@@ -52,6 +106,8 @@ async function startMinimalServer() {
             .success { color: #28a745; }
             .warning { color: #ffc107; }
             .error { color: #dc3545; }
+            .logo { max-width: 150px; margin-bottom: 20px; }
+            pre { background: #f1f1f1; padding: 10px; border-radius: 4px; overflow-x: auto; }
           </style>
         </head>
         <body>
@@ -59,8 +115,9 @@ async function startMinimalServer() {
             <h1>Day Reseller Platform</h1>
             <div class="card">
               <h2 class="success">Server is Running</h2>
-              <p>This is a placeholder page for the Day Reseller Platform. The database connection is established, but the full application is not yet running.</p>
-              <p>To continue development, please reinstall the Node.js dependencies and restart the application server.</p>
+              <p>This is a placeholder page for the Day Reseller Platform.</p>
+              <p>Database Status: <strong>${dbConnectionStatus}</strong></p>
+              ${dbError ? `<p class="error">Error: ${dbError}</p>` : ''}
             </div>
             <div class="card">
               <h3>Environment Information</h3>
@@ -69,7 +126,25 @@ async function startMinimalServer() {
               <p>Database Connection: ${process.env.DATABASE_URL ? 'Configured' : 'Not Configured'}</p>
               <p>Port: ${process.env.PORT || '5000 (default)'}</p>
             </div>
+            <div class="card">
+              <h3>API Endpoints</h3>
+              <p><code>/health</code> - Health check endpoint (returns JSON)</p>
+            </div>
           </div>
+          <script>
+            // Check database status every 5 seconds
+            setInterval(() => {
+              fetch('/health')
+                .then(response => response.json())
+                .then(data => {
+                  const dbStatus = document.querySelector('p strong');
+                  if (dbStatus) {
+                    dbStatus.textContent = data.database;
+                  }
+                })
+                .catch(error => console.error('Health check failed:', error));
+            }, 5000);
+          </script>
         </body>
         </html>
       `);

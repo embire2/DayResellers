@@ -1,6 +1,6 @@
 /**
- * Minimal server launcher for Day Reseller Platform (ES Module version)
- * This script directly starts a minimal HTTP server without relying on any external tools
+ * Simple server starter for Day Reseller Platform
+ * This script starts our simplified HTTP server that connects to the database
  */
 
 import fs from 'fs';
@@ -11,6 +11,7 @@ const { Pool } = pg;
 // Global variables
 let dbConnectionStatus = 'Not tested';
 let dbError = null;
+let dashboardHtml = '';
 
 // Load environment variables from .env file
 function loadEnv() {
@@ -47,7 +48,82 @@ async function testDatabaseConnection() {
     });
 
     const client = await pool.connect();
-    const result = await client.query('SELECT NOW() as currentTime');
+    const result = await client.query('SELECT NOW() as currenttime');
+    
+    // Let's also test a few tables to make sure our schema is loaded
+    try {
+      const usersResult = await client.query('SELECT COUNT(*) as count FROM users');
+      console.log(`Users in database: ${usersResult.rows[0].count}`);
+      
+      // Check if tables exist before querying
+      const checkTableResult = await client.query(`
+        SELECT EXISTS (
+          SELECT FROM information_schema.tables 
+          WHERE table_schema = 'public' 
+          AND table_name = 'product_categories'
+        ) as exists
+      `);
+      
+      let categoriesCount = 0;
+      let productsCount = 0;
+      
+      if (checkTableResult.rows[0].exists) {
+        const categoriesResult = await client.query('SELECT COUNT(*) as count FROM product_categories');
+        categoriesCount = categoriesResult.rows[0].count;
+        console.log(`Product categories in database: ${categoriesCount}`);
+      } else {
+        console.log('Product categories table does not exist');
+      }
+      
+      // Check if product table exists
+      const checkProductTableResult = await client.query(`
+        SELECT EXISTS (
+          SELECT FROM information_schema.tables 
+          WHERE table_schema = 'public' 
+          AND table_name = 'products'
+        ) as exists
+      `);
+      
+      if (checkProductTableResult.rows[0].exists) {
+        const productsResult = await client.query('SELECT COUNT(*) as count FROM products');
+        productsCount = productsResult.rows[0].count;
+        console.log(`Products in database: ${productsCount}`);
+      } else {
+        console.log('Products table does not exist');
+      }
+      
+      // List all available tables for debugging
+      const tablesResult = await client.query(`
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public'
+      `);
+      
+      const tablesList = tablesResult.rows.map(row => row.table_name).join(', ');
+      console.log(`Available tables: ${tablesList}`);
+      
+      dashboardHtml = `
+        <div class="card">
+          <h3>Database Summary</h3>
+          <ul>
+            <li>Users: ${usersResult.rows[0].count}</li>
+            <li>Product Categories: ${categoriesCount}</li>
+            <li>Products: ${productsCount}</li>
+          </ul>
+          <p>Available tables: ${tablesList}</p>
+        </div>
+      `;
+    } catch (dbError) {
+      console.error('Error querying database tables:', dbError.message);
+      dashboardHtml = `
+        <div class="card error">
+          <h3>Database Schema Issues</h3>
+          <p>Could not query database tables. The schema may not be properly initialized.</p>
+          <pre>${dbError.message}</pre>
+        </div>
+      `;
+    }
+    
     client.release();
 
     dbConnectionStatus = 'Connected';
@@ -108,6 +184,18 @@ async function startMinimalServer() {
             .error { color: #dc3545; }
             .logo { max-width: 150px; margin-bottom: 20px; }
             pre { background: #f1f1f1; padding: 10px; border-radius: 4px; overflow-x: auto; }
+            ul { padding-left: 20px; }
+            li { margin-bottom: 5px; }
+            .btn { 
+              display: inline-block; 
+              background: #4CAF50; 
+              color: white; 
+              padding: 10px 15px; 
+              text-decoration: none; 
+              border-radius: 4px;
+              margin-top: 10px;
+            }
+            .btn:hover { background: #45a049; }
           </style>
         </head>
         <body>
@@ -115,10 +203,11 @@ async function startMinimalServer() {
             <h1>Day Reseller Platform</h1>
             <div class="card">
               <h2 class="success">Server is Running</h2>
-              <p>This is a placeholder page for the Day Reseller Platform.</p>
+              <p>This is a simplified version of the Day Reseller Platform.</p>
               <p>Database Status: <strong>${dbConnectionStatus}</strong></p>
               ${dbError ? `<p class="error">Error: ${dbError}</p>` : ''}
             </div>
+            ${dashboardHtml}
             <div class="card">
               <h3>Environment Information</h3>
               <p>Node.js: ${process.version}</p>
@@ -129,6 +218,16 @@ async function startMinimalServer() {
             <div class="card">
               <h3>API Endpoints</h3>
               <p><code>/health</code> - Health check endpoint (returns JSON)</p>
+            </div>
+            <div class="card">
+              <h3>Next Steps</h3>
+              <p>This minimal server confirms the database connection works correctly.</p>
+              <p>To launch the full application with all features, it is recommended to:</p>
+              <ol>
+                <li>Ensure the database schema is properly initialized</li>
+                <li>Configure a proper workflow in Replit</li>
+                <li>Launch the full application using the standard startup script</li>
+              </ol>
             </div>
           </div>
           <script>

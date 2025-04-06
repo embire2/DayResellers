@@ -1,5 +1,5 @@
 {
   "name": "Start application",
   "workdir": ".",
-  "command": "./start-replit.sh"
+  "command": "./start-workflow.sh"
 }

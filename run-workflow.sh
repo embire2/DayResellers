@@ -1,10 +1,7 @@
 #!/bin/bash
 
-# Day Reseller Platform - Replit Start Script
-# This script is called by the Replit workflow system
-
-echo "Starting Day Reseller Platform Server"
-echo "========================================"
+echo "Day Reseller Platform - Starting server directly with Node.js"
+echo "=========================================================="
 
 # Define possible paths for Node.js
 NODE_PATHS=(
