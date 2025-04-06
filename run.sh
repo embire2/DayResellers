@@ -1,16 +1,14 @@
 #!/bin/bash
-cd "$(dirname "$0")"
-echo "Attempting to run application..."
 
-# First attempt: directly use node modules
-echo "Trying to run with local node modules..."
-if [ -f node_modules/tsx/dist/cli.mjs ]; then
-  export NODE_PATH="./node_modules:$NODE_PATH"
-  node_modules/.bin/tsx server/index.ts || echo "Failed to run with local tsx"
-else
-  echo "Local tsx module not found or not executable"
+# Set path to Node.js executable
+NODE_BIN="/mnt/nixmodules/nix/store/hdq16s6vq9smhmcyl4ipmwfp9f2558rc-nodejs-20.10.0/bin/node"
+
+# Verify Node.js executable exists
+if [ ! -f "$NODE_BIN" ]; then
+  echo "Error: Node.js executable not found at $NODE_BIN"
+  exit 1
 fi
 
-# Second attempt: use npx if available
-echo "Trying to run with npx..."
-which npx && npx tsx server/index.ts || echo "Failed to run with npx"
+# Run the server using our Node.js launcher script
+echo "Starting Day Reseller Platform with Node.js version $($NODE_BIN --version)"
+$NODE_BIN run-server.js
