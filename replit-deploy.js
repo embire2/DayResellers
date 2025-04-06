@@ -47,6 +47,9 @@ const config = {
 
 /**
  * Execute a shell command and print the output
+ * 
+ * This function runs a command in a synchronous manner and handles both success and error cases.
+ * It returns an object with success status and either output or error information.
  */
 function exec(command) {
   console.log(`\n🔄 Executing: ${command}`);
