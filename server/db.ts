@@ -22,6 +22,17 @@ const rootDir = path.resolve(__dirname, '..');
 // Initialize PostgreSQL connection pool
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
+  // Only if DATABASE_URL is not provided, use individual params
+  // This should be rarely used as Replit provides DATABASE_URL
+  ...(process.env.DATABASE_URL ? {} : {
+    host: process.env.PGHOST || 'localhost',
+    port: process.env.PGPORT ? parseInt(process.env.PGPORT) : 5432,
+    user: process.env.PGUSER || 'postgres',
+    password: process.env.PGPASSWORD || 'postgres',
+    database: process.env.PGDATABASE || 'postgres',
+  }),
+  // Enable SSL for Replit hosted databases
+  ssl: process.env.DATABASE_URL?.includes('.replit.dev') ? { rejectUnauthorized: false } : undefined,
 });
 
 // Initialize Drizzle with the PostgreSQL pool
@@ -213,8 +224,19 @@ export async function runMigrations() {
 // Create a function to check the database connection
 export async function checkConnection(): Promise<boolean> {
   try {
-    logger.info("Checking database connection");
-    await pool.query('SELECT NOW()');
+    // Log connection parameters (safely)
+    const connectionParams = {
+      host: process.env.PGHOST || 'localhost',
+      port: process.env.PGPORT || '5432',
+      database: process.env.PGDATABASE || 'postgres',
+      user: process.env.PGUSER || 'postgres',
+      hasPassword: !!process.env.PGPASSWORD,
+      hasConnectionString: !!process.env.DATABASE_URL,
+      sslEnabled: process.env.DATABASE_URL?.includes('.replit.dev') || process.env.PGHOST?.includes('.replit.dev')
+    };
+    
+    logger.info("Checking database connection with params", connectionParams);
+    await pool.query('SELECT NOW() as current_time');
     logger.info("Database connection successful");
     return true;
   } catch (error) {
