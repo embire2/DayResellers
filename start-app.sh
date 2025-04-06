@@ -1,3 +1,32 @@
+#!/bin/bash
+
+# Define Node.js and npm paths
+NODE_PATH=/nix/store/7z337y5rawlc7a86yznxhllihnk3wj78-nodejs-22.10.0-wrapped/bin
+NODE=$NODE_PATH/node
+NPM=$NODE_PATH/npm
+
+# Add node to PATH
+export PATH=$NODE_PATH:$PATH
+
+# Print Node and NPM versions
+echo "Node.js version:"
+$NODE -v
+echo "npm version:"
+$NPM -v
+
+# Print database connection parameters (without exposing secrets)
+echo "Database configuration:"
+echo "Host: $PGHOST"
+echo "Port: $PGPORT"
+echo "Database: $PGDATABASE"
+echo "User: $PGUSER"
+echo "DATABASE_URL is set: $([[ -n "$DATABASE_URL" ]] && echo "Yes" || echo "No")"
+
+# Create server/db.ts backup
+cp server/db.ts server/db.ts.bak
+
+# Update server/db.ts to fix the connection configuration
+cat > server/db.ts.new << 'EOF'
 /**
  * Database configuration for OpenWeb Reseller Platform
  * PostgreSQL with Drizzle ORM
@@ -284,3 +313,16 @@ export async function createInitialAdminUser() {
     throw error;
   }
 }
+EOF
+
+# Replace the old file with the new one
+mv server/db.ts.new server/db.ts
+
+# Install dependencies
+echo "Installing dependencies..."
+$NPM install
+
+# Start the application
+echo "Starting application..."
+# Use the tsx from node_modules directly
+./node_modules/.bin/tsx server/index.ts
