@@ -4,6 +4,7 @@ import { format, subMonths } from 'date-fns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Loader2, Calendar, Activity, Wifi, Clock, Database } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { apiRequest } from '@/lib/queryClient';
@@ -25,8 +26,16 @@ interface UsageData {
   TotalGB: string;
 }
 
+interface DailyUsageData {
+  Date: string;
+  Total: string;
+  TotalGB: string;
+  ConnectedTime: string;
+}
+
 export function UsageDataTab({ userProduct }: UsageDataTabProps) {
   const [currentTab, setCurrentTab] = useState<string>('current');
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   
   // Calculate the months for tabs (current month and 3 previous months)
   const currentDate = new Date();
@@ -174,10 +183,66 @@ export function UsageDataTab({ userProduct }: UsageDataTabProps) {
                     <span className="font-mono">{item.MSISDSN}</span>
                   </div>
                 )}
+                
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full mt-2"
+                  onClick={() => setSelectedMonth(selectedMonth === item.YM ? null : item.YM)}
+                >
+                  {selectedMonth === item.YM ? 'Hide Daily Breakdown' : 'Show Daily Breakdown'}
+                </Button>
+                
+                {selectedMonth === item.YM && renderDailyData(data, item.YM)}
               </div>
             </CardContent>
           </Card>
         ))}
+      </div>
+    );
+  };
+  
+  const renderDailyData = (data: any, monthYM: string) => {
+    if (!data || !data.success || !data.data || !data.data.dailyData || !data.data.dailyData[monthYM]) {
+      return null;
+    }
+
+    const dailyItems = data.data.dailyData[monthYM];
+    
+    if (dailyItems.length === 0) {
+      return (
+        <div className="text-center p-4 text-muted-foreground">
+          No daily breakdown available for this month.
+        </div>
+      );
+    }
+    
+    return (
+      <div className="mt-4">
+        <h4 className="text-md font-medium mb-3 flex items-center">
+          <Calendar className="h-4 w-4 mr-2 text-primary" />
+          Daily Usage Breakdown
+        </h4>
+        <div className="overflow-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="border-b">
+                <th className="text-left p-2">Date</th>
+                <th className="text-left p-2">Total Usage</th>
+                <th className="text-left p-2">Connected Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              {dailyItems.map((item: DailyUsageData, index: number) => (
+                <tr key={index} className={index % 2 === 0 ? 'bg-muted/30' : ''}>
+                  <td className="p-2">{item.Date}</td>
+                  <td className="p-2 font-mono">{item.TotalGB} GB</td>
+                  <td className="p-2 font-mono">{item.ConnectedTime}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     );
   };

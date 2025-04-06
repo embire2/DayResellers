@@ -446,10 +446,10 @@ export const setupApiIntegration = (app: Express) => {
       }
       
       const masterCategory = category.masterCategory;
-      if (masterCategory !== 'MTN Fixed' && masterCategory !== 'MTN GSM') {
+      if (masterCategory !== 'MTN Fixed') {
         return res.status(400).json({ 
           success: false, 
-          error: 'Invalid master category. Must be "MTN Fixed" or "MTN GSM"' 
+          error: 'Usage data scraping is only supported for MTN Fixed products' 
         });
       }
       
@@ -468,30 +468,9 @@ export const setupApiIntegration = (app: Express) => {
         });
       }
       
-      // Build the endpoint path for monthly usage
-      const endpoint = '/rest/lte/monthUsage.php';
+      const { BroadbandScraper } = await import('../src/scrapers/broadband-scraper');
       
-      // Build the parameters
-      const params = {
-        year,
-        month,
-        usernames: userProduct.username
-      };
-      
-      // Execute the API request
-      const result = await makeApiRequest(masterCategory, endpoint, 'GET', params);
-      
-      // Convert usage data from bytes to GB if available
-      if (result.success && result.data && Array.isArray(result.data.data)) {
-        result.data.data.forEach((item: any) => {
-          if (item.Total) {
-            // Convert bytes to GB (1 GB = 1,073,741,824 bytes)
-            const totalBytes = parseInt(item.Total);
-            const totalGB = (totalBytes / 1073741824).toFixed(2);
-            item.TotalGB = totalGB;
-          }
-        });
-      }
+      const result = await BroadbandScraper.getUsageData(userProduct.username || '', currentMonth);
       
       res.json(result);
     } catch (error) {
